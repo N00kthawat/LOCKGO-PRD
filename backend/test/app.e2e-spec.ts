@@ -10,7 +10,8 @@ type TestFixtures = {
   lockerOneId: string;
   lockerTwoId: string;
   reservedMediumCompartmentId: string;
-  userId: string;
+  userOneId: string;
+  userTwoId: string;
 };
 
 describe('LOCKGO API (e2e)', () => {
@@ -97,7 +98,7 @@ describe('LOCKGO API (e2e)', () => {
       .post('/api/reservations')
       .set('x-idempotency-key', 'create-success-1')
       .send({
-        userId: fixtures.userId,
+        userId: fixtures.userOneId,
         lockerId: fixtures.lockerTwoId,
         size: 'SMALL',
         startAt: '2026-08-18T12:00:00.000Z',
@@ -136,7 +137,7 @@ describe('LOCKGO API (e2e)', () => {
       .post('/api/reservations')
       .set('x-idempotency-key', 'conflict-medium-1')
       .send({
-        userId: fixtures.userId,
+        userId: fixtures.userOneId,
         lockerId: fixtures.lockerOneId,
         size: 'MEDIUM',
         startAt: '2026-08-18T08:00:00.000Z',
@@ -152,7 +153,7 @@ describe('LOCKGO API (e2e)', () => {
 
   it('POST /api/reservations deduplicates duplicate confirmation requests', async () => {
     const payload = {
-      userId: fixtures.userId,
+      userId: fixtures.userOneId,
       lockerId: fixtures.lockerTwoId,
       size: 'SMALL',
       startAt: '2026-08-18T13:00:00.000Z',
@@ -178,12 +179,69 @@ describe('LOCKGO API (e2e)', () => {
 
     const reservationCount = await prisma.reservation.count({
       where: {
-        userId: fixtures.userId,
+        userId: fixtures.userOneId,
         idempotencyKey: 'duplicate-confirm-1',
       },
     });
 
     expect(reservationCount).toBe(1);
+  });
+
+  it('POST /api/reservations allows only one successful reservation during concurrent booking', async () => {
+    const startAt = '2026-08-18T15:00:00.000Z';
+
+    const [firstResponse, secondResponse] = await Promise.all([
+      request(app.getHttpServer()).post('/api/reservations').send({
+        userId: fixtures.userOneId,
+        lockerId: fixtures.lockerTwoId,
+        size: 'SMALL',
+        startAt,
+        durationHours: 2,
+      }),
+      request(app.getHttpServer()).post('/api/reservations').send({
+        userId: fixtures.userTwoId,
+        lockerId: fixtures.lockerTwoId,
+        size: 'SMALL',
+        startAt,
+        durationHours: 2,
+      }),
+    ]);
+
+    const statuses = [firstResponse.status, secondResponse.status].sort();
+
+    expect(statuses).toEqual([201, 409]);
+
+    const successResponse =
+      firstResponse.status === 201 ? firstResponse : secondResponse;
+    const conflictResponse =
+      firstResponse.status === 409 ? firstResponse : secondResponse;
+
+    expect(successResponse.body).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        status: 'RESERVED',
+        compartment: expect.objectContaining({
+          size: 'SMALL',
+        }),
+      }),
+    );
+
+    expect(conflictResponse.body).toEqual({
+      code: 'NO_AVAILABLE_COMPARTMENT',
+      message: 'No locker compartment is available for the selected time range',
+    });
+
+    const overlappingReservationCount = await prisma.reservation.count({
+      where: {
+        compartment: {
+          lockerId: fixtures.lockerTwoId,
+          size: 'SMALL',
+        },
+        startAt: new Date(startAt),
+      },
+    });
+
+    expect(overlappingReservationCount).toBe(1);
   });
 
   it('GET /api/lockers/:id returns locker not found', async () => {
@@ -236,6 +294,13 @@ async function resetDatabase(prisma: PrismaService): Promise<TestFixtures> {
     data: {
       email: 'api-test-user@lockgo.local',
       fullName: 'API Test User',
+    },
+  });
+
+  const secondUser = await prisma.user.create({
+    data: {
+      email: 'api-test-user-two@lockgo.local',
+      fullName: 'API Test User Two',
     },
   });
 
@@ -326,6 +391,7 @@ async function resetDatabase(prisma: PrismaService): Promise<TestFixtures> {
     lockerOneId: lockerOne.id,
     lockerTwoId: lockerTwo.id,
     reservedMediumCompartmentId: reservedMediumCompartment.id,
-    userId: user.id,
+    userOneId: user.id,
+    userTwoId: secondUser.id,
   };
 }

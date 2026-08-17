@@ -3,6 +3,7 @@ import {
   Compartment,
   Locker,
   Prisma,
+  PrismaClient,
   Reservation,
   ReservationStatus,
 } from '@prisma/client';
@@ -24,6 +25,13 @@ type ReservationWithRelations = Reservation & {
   compartment: Compartment & {
     locker: Locker;
   };
+};
+
+type LockedCompartmentCandidate = {
+  id: string;
+  code: string;
+  lockerId: string;
+  pricePerHourCents: number;
 };
 
 @Injectable()
@@ -96,76 +104,53 @@ export class ReservationsService {
     }
 
     try {
-      const createdReservation = await this.prisma.$transaction(async (tx) => {
-        const availableCompartments = await tx.compartment.findMany({
-          where: {
-            lockerId: request.lockerId,
-            size: request.size,
-            isActive: true,
-          },
-          include: {
-            locker: true,
-            reservations: {
-              where: {
-                status: {
-                  in: [ReservationStatus.RESERVED, ReservationStatus.ACTIVE],
+      const createdReservation = await this.prisma.$transaction(
+        async (tx) => {
+          const availableCompartment =
+            await this.findAndLockAvailableCompartment(
+              tx,
+              request.lockerId,
+              request.size,
+              request.startAt,
+              endAt,
+            );
+
+          if (!availableCompartment) {
+            throw new ApiException(
+              HttpStatus.CONFLICT,
+              'NO_AVAILABLE_COMPARTMENT',
+              'No locker compartment is available for the selected time range',
+            );
+          }
+
+          return tx.reservation.create({
+            data: {
+              reservationNumber: this.createReservationNumber(),
+              userId: user.id,
+              compartmentId: availableCompartment.id,
+              status: ReservationStatus.RESERVED,
+              startAt: request.startAt,
+              endAt,
+              durationHours: request.durationHours,
+              totalPriceCents: calculateTotalPriceCents(
+                availableCompartment.pricePerHourCents,
+                request.durationHours,
+              ),
+              idempotencyKey: request.idempotencyKey,
+            },
+            include: {
+              compartment: {
+                include: {
+                  locker: true,
                 },
               },
-              select: {
-                startAt: true,
-                endAt: true,
-              },
             },
-          },
-          orderBy: {
-            code: 'asc',
-          },
-        });
-
-        const availableCompartment = availableCompartments.find((compartment) =>
-          compartment.reservations.every(
-            (reservation) =>
-              !hasTimeOverlap(
-                request.startAt,
-                endAt,
-                reservation.startAt,
-                reservation.endAt,
-              ),
-          ),
-        );
-
-        if (!availableCompartment) {
-          throw new ApiException(
-            HttpStatus.CONFLICT,
-            'NO_AVAILABLE_COMPARTMENT',
-            'No locker compartment is available for the selected time range',
-          );
-        }
-
-        return tx.reservation.create({
-          data: {
-            reservationNumber: this.createReservationNumber(),
-            userId: user.id,
-            compartmentId: availableCompartment.id,
-            status: ReservationStatus.RESERVED,
-            startAt: request.startAt,
-            endAt,
-            durationHours: request.durationHours,
-            totalPriceCents: calculateTotalPriceCents(
-              availableCompartment.pricePerHourCents,
-              request.durationHours,
-            ),
-            idempotencyKey: request.idempotencyKey,
-          },
-          include: {
-            compartment: {
-              include: {
-                locker: true,
-              },
-            },
-          },
-        });
-      });
+          });
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
 
       return {
         created: true,
@@ -268,5 +253,56 @@ export class ReservationsService {
     const entropy = randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
 
     return `LK-${datePortion}-${entropy}`;
+  }
+
+  private async findAndLockAvailableCompartment(
+    tx: Omit<
+      PrismaService | PrismaClient,
+      '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'
+    >,
+    lockerId: string,
+    size: CreateReservationRequest['size'],
+    startAt: Date,
+    endAt: Date,
+  ): Promise<LockedCompartmentCandidate | null> {
+    const lockedCandidates = await tx.$queryRaw<LockedCompartmentCandidate[]>`
+      SELECT
+        c.id,
+        c.code,
+        c."lockerId",
+        c."pricePerHourCents"
+      FROM "Compartment" c
+      WHERE c."lockerId" = ${lockerId}
+        AND c."size" = ${size}::"LockerSize"
+        AND c."isActive" = true
+      ORDER BY c.code ASC
+      FOR UPDATE SKIP LOCKED
+    `;
+
+    for (const candidate of lockedCandidates) {
+      const conflictingReservations = await tx.reservation.findMany({
+        where: {
+          compartmentId: candidate.id,
+          status: {
+            in: [ReservationStatus.RESERVED, ReservationStatus.ACTIVE],
+          },
+        },
+        select: {
+          id: true,
+          startAt: true,
+          endAt: true,
+        },
+      });
+
+      const hasConflict = conflictingReservations.some((reservation) =>
+        hasTimeOverlap(startAt, endAt, reservation.startAt, reservation.endAt),
+      );
+
+      if (!hasConflict) {
+        return candidate;
+      }
+    }
+
+    return null;
   }
 }
