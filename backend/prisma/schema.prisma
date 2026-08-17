@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LockerOperatingStatus {
+  OPERATIONAL
+  OUT_OF_SERVICE
+}
+
+enum LockerSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ReservationStatus {
+  RESERVED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  fullName     String
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Locker {
+  id              String                @id @default(cuid())
+  name            String
+  address         String
+  latitude        Decimal?              @db.Decimal(9, 6)
+  longitude       Decimal?              @db.Decimal(9, 6)
+  operatingStatus LockerOperatingStatus @default(OPERATIONAL)
+  openTime        String?
+  closeTime       String?
+  compartments    Compartment[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([operatingStatus])
+}
+
+model Compartment {
+  id                String        @id @default(cuid())
+  lockerId          String
+  code              String
+  size              LockerSize
+  pricePerHourCents Int
+  isActive          Boolean       @default(true)
+  locker            Locker        @relation(fields: [lockerId], references: [id], onDelete: Cascade)
+  reservations      Reservation[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([lockerId, code])
+  @@index([lockerId, size, isActive])
+}
+
+model Reservation {
+  id                String            @id @default(cuid())
+  reservationNumber String            @unique
+  userId            String
+  compartmentId     String
+  status            ReservationStatus @default(RESERVED)
+  startAt           DateTime
+  endAt             DateTime
+  durationHours     Int
+  totalPriceCents   Int
+  idempotencyKey    String?
+  user              User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  compartment       Compartment       @relation(fields: [compartmentId], references: [id], onDelete: Restrict)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([userId, idempotencyKey])
+  @@index([compartmentId, startAt, endAt])
+  @@index([status, startAt, endAt])
+}
