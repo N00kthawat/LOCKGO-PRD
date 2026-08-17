@@ -1,81 +1,59 @@
 # AI Code Review Evidence
 
-This document records one AI-assisted code area and the developer review applied to it.
+เอกสารนี้บันทึก 1 code area ที่ AI ช่วยงาน และ developer เข้าไป review ต่อก่อนยอมรับเป็น final code
 
-## Reviewed Area
+## ส่วนที่เลือกมา Review
 
-Reservation creation and concurrent booking protection in:
+Reservation creation และ concurrent booking protection ใน:
 
 - [backend/src/reservations/reservations.service.ts](/Users/nookthawat/KHOOMKHA/lockgo/backend/src/reservations/reservations.service.ts)
 - [backend/test/app.e2e-spec.ts](/Users/nookthawat/KHOOMKHA/lockgo/backend/test/app.e2e-spec.ts)
 
-## AI-Assisted Code Area
+# AI Code Review
 
-The implementation area included:
-- reservation creation flow
-- availability re-check during creation
-- idempotency handling
-- transaction-based concurrency protection
-- concurrent booking integration test
+ส่วนที่เลือกมา Review คือ **Reservation Creation Flow** ซึ่ง AI ช่วยสร้าง logic สำหรับตรวจสอบช่องว่าง สร้าง Reservation และป้องกันการจองซ้ำ
 
-## Developer Review
+## 1. Correctness
 
-### 1. Correctness
+จากการ Review พบว่า logic เดิมตรวจ availability ก่อนสร้าง Reservation ได้ถูกต้องในกรณีทั่วไป แต่ยังมีความเสี่ยงเมื่อมีหลาย request จองพร้อมกัน
 
-Reviewed whether:
-- overlapping reservations are rejected
-- idempotent requests return the existing reservation
-- concurrent booking of the last compartment succeeds only once
+ตัวอย่างเช่น หากเหลือช่องว่างเพียง 1 ช่อง request สองตัวอาจตรวจพบว่าช่องยังว่างพร้อมกัน และสร้าง Reservation ซ้ำได้
 
-Result:
-- accepted after adding transaction isolation and row locking
+จึงปรับให้การเลือก Compartment และสร้าง Reservation ทำงานภายใน Database Transaction เดียวกัน พร้อมใช้ `FOR UPDATE SKIP LOCKED` เพื่อไม่ให้หลาย request เลือกช่องเดียวกันพร้อมกัน
 
-### 2. Bug Risk
+## 2. Bug Risk
 
-Initial risk:
-- reading available compartments and inserting later without locking could allow two concurrent requests to choose the same compartment
+อีกกรณีคือผู้ใช้กด Confirm ซ้ำ หรือ request เดิมถูกส่งเข้ามาหลายครั้ง
 
-Developer action:
-- require a transaction-based solution
-- lock candidate compartments with `FOR UPDATE SKIP LOCKED`
-- verify with concurrent integration coverage
+จึงเพิ่ม Idempotency ที่ Backend เพื่อให้ request เดิมได้รับ Reservation ที่สร้างไว้แล้วกลับไป แทนการสร้างรายการใหม่
 
-### 3. Security / Data Integrity
+การป้องกันที่ Frontend เช่น disable ปุ่ม Confirm ยังสามารถใช้ได้ แต่ Backend ต้องเป็นตัวรับประกันความถูกต้องหลัก
 
-Reviewed whether the system relies only on frontend behavior.
+## 3. Security / Data Integrity
 
-Result:
-- duplicate confirmation is handled on the backend
-- concurrent booking correctness is enforced at the backend/database interaction layer
+Backend จะตรวจ Availability อีกครั้งตอน Confirm เสมอ ไม่ใช้ข้อมูลจาก Frontend เป็นตัวตัดสินสุดท้าย
 
-### 4. Performance
+วิธีนี้ช่วยป้องกันกรณีที่ข้อมูล Availability เปลี่ยนไปก่อนผู้ใช้กด Confirm และช่วยรักษาความถูกต้องของ Reservation
 
-Trade-off reviewed:
-- row locking and serializable transactions are more expensive than a naive read-then-insert flow
+## 4. Performance
 
-Developer decision:
-- accept the trade-off because the assessment prioritizes reservation correctness over maximum throughput
+การใช้ Transaction และ Row Locking มี overhead มากกว่าวิธี `read -> insert` แบบปกติ
 
-### 5. Maintainability
+อย่างไรก็ตาม สำหรับ Reservation ผมเลือกให้ความสำคัญกับความถูกต้องและการป้องกัน Double Booking มากกว่า throughput สูงสุด โดยจำกัดการ Lock ให้อยู่เฉพาะช่วงที่เลือก Compartment และสร้าง Reservation
 
-Reviewed whether the implementation remained understandable.
+## 5. Maintainability
 
-Result:
-- API behavior stays the same
-- concurrency-specific logic is concentrated inside reservation creation
-- test coverage demonstrates the intended behavior
+Concurrency logic ถูกเก็บอยู่ใน Reservation Creation Flow โดยไม่เปลี่ยน API Contract ภายนอก
 
-## Final Decision
+นอกจากนี้เพิ่ม Integration Test สำหรับกรณี Concurrent Booking เพื่อยืนยันว่า หากเหลือช่องว่างเพียง 1 ช่อง และมีหลาย request เข้ามาพร้อมกัน จะมีเพียง 1 Reservation ที่สร้างสำเร็จ
 
-The AI-assisted approach was kept, but only after developer review required:
-- narrower scope
-- explicit transaction usage
-- row locking
-- concurrent test coverage
+## Final Result
 
-## Final Outcome
+หลัง Developer Review ได้ปรับเพิ่ม:
 
-The final implementation now supports:
-- unique reservation creation for a given competing slot
-- backend idempotency for duplicate confirm requests
-- automated verification for concurrent booking behavior
+* Database Transaction
+* Row-level Locking ด้วย `FOR UPDATE SKIP LOCKED`
+* Backend Idempotency
+* Concurrent Booking Integration Test
+
+ผลลัพธ์คือระบบสามารถป้องกันทั้ง **Duplicate Reservation** จากการกด Confirm ซ้ำ และ **Double Booking** จากหลาย request ที่เข้ามาพร้อมกันได้

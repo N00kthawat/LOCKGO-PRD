@@ -1,133 +1,113 @@
 # AI-Assisted Development Workflow
 
-This document describes how AI was used during the assessment and where developer decisions were applied.
+โปรเจกต์นี้ใช้ AI เป็น Coding Partner ในการวิเคราะห์ requirement, ช่วย implement, debug และ review code โดย Developer เป็นผู้ตัดสินใจเรื่อง scope, architecture และตรวจสอบผลลัพธ์ก่อนนำไปใช้
 
 ## Workflow
 
 ```text
 Requirement
 ↓
-AI-assisted repository and requirement analysis
+AI-assisted Analysis
 ↓
-Developer review of source-of-truth documents
+Developer Review & Planning
 ↓
-Milestone planning
+AI-assisted Implementation
 ↓
-AI-assisted implementation
+Developer Code Review
 ↓
-Developer review of code structure and scope
+Testing & Debugging
 ↓
-Testing
-↓
-Bug fixing
-↓
-AI-assisted code review notes
-↓
-Final code
+Final Code
 ```
 
-## How AI Was Used
+## 1. Requirement Analysis
 
-### 1. Requirement Analysis
+**AI ช่วย**
 
-AI was used to:
-- read `AGENTS.md`
-- read the assessment PDFs
-- inspect repository structure
-- summarize implemented vs missing scope
-- identify the smallest next milestone
+* อ่าน Technical Assessment, PRD และ `AGENTS.md`
+* ตรวจโครงสร้าง repository
+* สรุป requirement และงานที่ยังขาด
+* ช่วยแบ่งงานเป็น milestone
 
-Developer decision:
-- confirm that work should start from backend correctness and not frontend visuals
+**Developer ตัดสินใจ**
 
-### 2. Backend Foundation
+* เริ่มจาก Backend และ Reservation Correctness ก่อน Frontend
+* จำกัด scope ให้ตรงกับ assessment และไม่เพิ่ม feature ที่ยังไม่จำเป็น
 
-AI was used to:
-- design the initial Prisma schema
-- implement migration and seed setup
-- add reservation domain rules
-- implement locker and reservation APIs
-- add unit and e2e tests
+## 2. Backend Implementation
 
-Developer decision:
-- keep the model minimal with only required core entities
-- avoid adding unnecessary abstractions
-- keep API scope aligned with the assessment
+**AI ช่วย**
 
-### 3. Git Workflow
+* ออกแบบ Prisma Schema
+* สร้าง Migration และ Seed Data
+* Implement Locker และ Reservation APIs
+* เพิ่ม Unit Test และ Integration Test
 
-AI was used to:
-- suggest branch strategy
-- restructure local history into milestone commits
-- prepare work for GitHub push
+**Developer ตัดสินใจ**
 
-Developer decision:
-- reject tool-branded branch naming
-- choose simple branch names:
-  - `main`
-  - `backend-foundation`
-  - `reservation-safety`
-  - `frontend-reservation-flow`
-  - `project-docs`
+* ใช้ model เท่าที่จำเป็นกับ core requirement
+* ไม่เพิ่ม abstraction ที่ยังไม่มี use case
+* Review API behavior และ business rules ก่อนเก็บ implementation
 
-### 4. Concurrency Hardening
+## 3. Reservation Safety
 
-AI was used to:
-- narrow the branch scope to the concurrency requirement
-- implement transaction-based reservation creation
-- add row locking for compartment selection
-- add a concurrent reservation integration test
+**AI ช่วย**
 
-Developer decision:
-- focus only on concurrent booking correctness
-- avoid broad architectural changes outside the requirement
+* วิเคราะห์ Duplicate Confirm และ Race Condition
+* Implement Transaction-based Reservation Creation
+* เพิ่ม Row Locking ด้วย `FOR UPDATE SKIP LOCKED`
+* เพิ่ม Concurrent Booking Integration Test
 
-### 5. Documentation
+**Developer ตัดสินใจ**
 
-AI was used to:
-- structure README content
-- capture prompt evidence
-- record workflow evidence
-- record one reviewed AI-assisted code area
+* ให้ Backend/Database เป็นตัวรับประกัน Reservation Correctness
+* ใช้ Idempotency สำหรับ duplicate request
+* ใช้ Transaction และ Locking สำหรับกรณีหลาย user แย่งช่องเดียวกัน
 
-Developer decision:
-- keep documentation limited to what the assessment explicitly requires
+## 4. Frontend & Runtime Debugging
 
-## Developer Control Points
+**AI ช่วย**
 
-The developer explicitly controlled:
-- whether coding should start or pause
-- branch naming strategy
-- scope boundaries for each branch
-- whether work should move to GitHub
-- whether to prioritize docs before frontend
+* สร้าง 4-screen Reservation Flow
+* เชื่อม Frontend กับ Backend APIs
+* Debug ปัญหา CORS และ Local Test Data
 
-## Evidence of Review
+**Developer ตัดสินใจ**
 
-AI output was not accepted automatically.
+* คง UI ให้เรียบง่ายและอยู่ใน scope
+* ใช้ Seed Data สำหรับ Demo
+* ไม่เพิ่ม Authentication เพราะอยู่นอก scope ของ assessment
 
-The developer reviewed:
-- schema scope
-- commit structure
-- branch structure
-- concurrency strategy
-- documentation scope
+## 5. Git & Documentation
 
-Verification steps used during implementation included:
-- typecheck
-- unit tests
-- e2e tests
-- build
+**AI ช่วย**
 
-## Current Delivery Stages
+* เสนอ Git Workflow และ Branch Strategy
+* ช่วยจัดโครงสร้าง README และเอกสาร AI
+* ช่วยบันทึก AI Prompts, Code Review และ Debugging Challenge
 
-Completed:
-- backend foundation
-- reservation concurrency hardening
-- Git branch and commit structure
-- AI workflow evidence
+**Developer ตัดสินใจ**
 
-Not yet completed:
-- frontend flow
-- final README refinement after frontend completion
-- optional Swagger / OpenAPI
+* ใช้ branch ตาม milestone เช่น
+
+  * `backend-foundation`
+  * `reservation-safety`
+  * `frontend-reservation-flow`
+  * `project-docs`
+* ตรวจให้เอกสารอธิบายเฉพาะสิ่งที่มีอยู่จริงใน repository
+
+## Verification
+
+AI Generated Code ไม่ได้ถูกนำมาใช้โดยอัตโนมัติ ทุกส่วนต้องผ่าน Developer Review และตรวจสอบด้วย
+
+* Typecheck
+* Unit Test
+* Integration / E2E Test
+* Build
+* Manual Reservation Flow
+
+หากพบปัญหา จะนำผลจาก Test หรือ Runtime Error กลับไปใช้ในการ Debug และแก้ไขก่อนเป็น Final Code
+
+## Final Responsibility
+
+AI ถูกใช้เพื่อเพิ่มความเร็วในการวิเคราะห์และพัฒนา แต่การตัดสินใจด้าน Scope, Architecture, Business Logic และการยอมรับ Final Code เป็นความรับผิดชอบของ Developer

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import './App.css'
 
 type Screen = 'find' | 'detail' | 'reservation' | 'confirmation'
+type Locale = 'en' | 'th'
 type LockerSize = 'SMALL' | 'MEDIUM' | 'LARGE'
 type ReservationStatus =
   | 'RESERVED'
@@ -68,10 +69,214 @@ type ApiError = {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:3000'
+const DEMO_USER_ID = 'demo-user-001'
+const THAILAND_TIME_ZONE = 'Asia/Bangkok'
+const THAILAND_UTC_OFFSET = '+07:00'
 
 const SIZE_OPTIONS: LockerSize[] = ['SMALL', 'MEDIUM', 'LARGE']
+const LOCATION_OPTIONS = [
+  'Bangkok',
+  'Chiang Mai',
+  'Phuket',
+  'Chonburi',
+  'Khon Kaen',
+  'Songkhla',
+  'Ayutthaya',
+  'Nakhon Ratchasima',
+  'Prachuap Khiri Khan',
+  'Udon Thani',
+]
+
+const LOCATION_LABELS: Record<string, { en: string; th: string }> = {
+  Bangkok: { en: 'Bangkok', th: 'กรุงเทพฯ' },
+  'Chiang Mai': { en: 'Chiang Mai', th: 'เชียงใหม่' },
+  Phuket: { en: 'Phuket', th: 'ภูเก็ต' },
+  Chonburi: { en: 'Chonburi', th: 'ชลบุรี' },
+  'Khon Kaen': { en: 'Khon Kaen', th: 'ขอนแก่น' },
+  Songkhla: { en: 'Songkhla', th: 'สงขลา' },
+  Ayutthaya: { en: 'Ayutthaya', th: 'อยุธยา' },
+  'Nakhon Ratchasima': { en: 'Nakhon Ratchasima', th: 'นครราชสีมา' },
+  'Prachuap Khiri Khan': { en: 'Prachuap Khiri Khan', th: 'ประจวบคีรีขันธ์' },
+  'Udon Thani': { en: 'Udon Thani', th: 'อุดรธานี' },
+}
+
+const UI_COPY = {
+  en: {
+    title: 'Find & Reserve Locker',
+    subtitle: 'Simple 4-screen flow for locker search, selection, reservation, and confirmation.',
+    timeZoneNote: 'All times shown in Thailand time (ICT)',
+    screens: {
+      find: 'Find Locker',
+      detail: 'Locker Detail',
+      reservation: 'Reservation',
+      confirmation: 'Confirmation',
+    },
+    actions: {
+      refresh: 'Refresh',
+      loading: 'Loading...',
+      search: 'Search',
+      viewDetail: 'View Detail',
+      back: 'Back',
+      selectLocker: 'Select Locker',
+      submitting: 'Submitting...',
+      confirmReservation: 'Confirm Reservation',
+      newSearch: 'New Search',
+    },
+    find: {
+      heading: 'Find Locker',
+      description: 'Search by location and basic filters.',
+      allLocations: 'All Locations',
+      allSizes: 'All Sizes',
+      onlyAvailable: 'Only show available lockers',
+      noLockers: 'No lockers found',
+      noLockersHint: 'Try a different location or relax the filters.',
+      sortMostAvailable: 'Most Available',
+      sortLowestPrice: 'Lowest Price',
+      sortNearest: 'Nearest',
+    },
+    detail: {
+      heading: 'Locker Detail',
+      loading: 'Loading locker detail...',
+      sizesHeading: 'Sizes & Availability',
+      availableSuffix: 'available',
+      notSpecified: 'Not specified',
+    },
+    reservation: {
+      heading: 'Reservation',
+      description: 'Fill the required fields and review the summary.',
+      userIdHelper: `Demo default: ${DEMO_USER_ID}`,
+      userIdPlaceholder: 'Required by the current backend contract',
+      idempotencyPlaceholder: 'Optional, e.g. booking-demo-001',
+      summaryHeading: 'Reservation Summary',
+      incomplete: 'Incomplete',
+      unavailable: 'Unavailable',
+    },
+    confirmation: {
+      heading: 'Confirmation',
+      description: 'Reservation created successfully.',
+    },
+    labels: {
+      language: 'Language',
+      location: 'Location',
+      lockerSize: 'Locker Size',
+      maxDistance: 'Max Distance (m)',
+      maxPrice: 'Max Price (cents)',
+      startDate: 'Start Date',
+      startTime: 'Start Time',
+      durationHours: 'Duration (hours)',
+      sort: 'Sort',
+      distance: 'Distance',
+      startingPrice: 'Starting Price',
+      small: 'Small',
+      medium: 'Medium',
+      large: 'Large',
+      status: 'Status',
+      operatingHours: 'Operating Hours',
+      availableTime: 'Available Time',
+      userId: 'User ID',
+      idempotencyKey: 'Idempotency Key',
+      locker: 'Locker',
+      compartmentSize: 'Compartment Size',
+      endTime: 'End Time',
+      duration: 'Duration',
+      pricePerHour: 'Price / hour',
+      totalPrice: 'Total Price',
+      bookingNumber: 'Booking Number',
+      compartment: 'Compartment',
+      expirationEndTime: 'Expiration / End Time',
+      bookingStatus: 'Booking Status',
+    },
+  },
+  th: {
+    title: 'ค้นหาและจองล็อกเกอร์',
+    subtitle: 'โฟลว์ 4 หน้าสำหรับค้นหา เลือก จอง และดูการยืนยันรายการ',
+    timeZoneNote: 'เวลาทั้งหมดแสดงเป็นเวลาไทย',
+    screens: {
+      find: 'ค้นหาล็อกเกอร์',
+      detail: 'รายละเอียดล็อกเกอร์',
+      reservation: 'จองล็อกเกอร์',
+      confirmation: 'ยืนยันการจอง',
+    },
+    actions: {
+      refresh: 'รีเฟรช',
+      loading: 'กำลังโหลด...',
+      search: 'ค้นหา',
+      viewDetail: 'ดูรายละเอียด',
+      back: 'ย้อนกลับ',
+      selectLocker: 'เลือกล็อกเกอร์นี้',
+      submitting: 'กำลังส่ง...',
+      confirmReservation: 'ยืนยันการจอง',
+      newSearch: 'ค้นหาใหม่',
+    },
+    find: {
+      heading: 'ค้นหาล็อกเกอร์',
+      description: 'ค้นหาจากสถานที่และตัวกรองพื้นฐาน',
+      allLocations: 'ทุกสถานที่',
+      allSizes: 'ทุกขนาด',
+      onlyAvailable: 'แสดงเฉพาะล็อกเกอร์ที่ยังว่าง',
+      noLockers: 'ไม่พบล็อกเกอร์',
+      noLockersHint: 'ลองเปลี่ยนสถานที่หรือผ่อนเงื่อนไขการค้นหา',
+      sortMostAvailable: 'ว่างมากที่สุด',
+      sortLowestPrice: 'ราคาต่ำสุด',
+      sortNearest: 'ใกล้ที่สุด',
+    },
+    detail: {
+      heading: 'รายละเอียดล็อกเกอร์',
+      loading: 'กำลังโหลดรายละเอียดล็อกเกอร์...',
+      sizesHeading: 'ขนาดและจำนวนช่องว่าง',
+      availableSuffix: 'ช่องว่าง',
+      notSpecified: 'ไม่ระบุ',
+    },
+    reservation: {
+      heading: 'จองล็อกเกอร์',
+      description: 'กรอกข้อมูลที่จำเป็นและตรวจสอบสรุปรายการก่อนยืนยัน',
+      userIdHelper: `ค่าเริ่มต้นสำหรับเดโม: ${DEMO_USER_ID}`,
+      userIdPlaceholder: 'backend ปัจจุบันยังต้องรับค่า userId',
+      idempotencyPlaceholder: 'ไม่บังคับ เช่น booking-demo-001',
+      summaryHeading: 'สรุปรายการจอง',
+      incomplete: 'ข้อมูลยังไม่ครบ',
+      unavailable: 'ไม่มีข้อมูล',
+    },
+    confirmation: {
+      heading: 'ยืนยันการจอง',
+      description: 'สร้างรายการจองสำเร็จแล้ว',
+    },
+    labels: {
+      language: 'ภาษา',
+      location: 'สถานที่',
+      lockerSize: 'ขนาดล็อกเกอร์',
+      maxDistance: 'ระยะทางสูงสุด (ม.)',
+      maxPrice: 'ราคาสูงสุด (เซ็นต์)',
+      startDate: 'วันที่เริ่มใช้',
+      startTime: 'เวลาเริ่มใช้',
+      durationHours: 'ระยะเวลา (ชั่วโมง)',
+      sort: 'เรียงลำดับ',
+      distance: 'ระยะทาง',
+      startingPrice: 'ราคาเริ่มต้น',
+      small: 'เล็ก',
+      medium: 'กลาง',
+      large: 'ใหญ่',
+      status: 'สถานะ',
+      operatingHours: 'เวลาเปิดให้บริการ',
+      availableTime: 'ช่วงเวลาที่ว่าง',
+      userId: 'รหัสผู้ใช้',
+      idempotencyKey: 'รหัสกันกดซ้ำ',
+      locker: 'ล็อกเกอร์',
+      compartmentSize: 'ขนาดช่องฝาก',
+      endTime: 'เวลาสิ้นสุด',
+      duration: 'ระยะเวลา',
+      pricePerHour: 'ราคาต่อชั่วโมง',
+      totalPrice: 'ราคารวม',
+      bookingNumber: 'เลขที่การจอง',
+      compartment: 'ช่องฝาก',
+      expirationEndTime: 'เวลาหมดอายุ / เวลาสิ้นสุด',
+      bookingStatus: 'สถานะการจอง',
+    },
+  },
+} as const
 
 function App() {
+  const [locale, setLocale] = useState<Locale>('en')
   const [screen, setScreen] = useState<Screen>('find')
   const [lockers, setLockers] = useState<LockerListItem[]>([])
   const [selectedLocker, setSelectedLocker] = useState<LockerDetail | null>(null)
@@ -94,13 +299,14 @@ function App() {
     durationHours: '2',
   })
   const [reservationForm, setReservationForm] = useState({
-    userId: '',
+    userId: DEMO_USER_ID,
     size: 'SMALL' as LockerSize,
     startDate: '2026-08-18',
     startTime: '12:00',
     durationHours: '2',
     idempotencyKey: '',
   })
+  const copy = UI_COPY[locale]
 
   const searchStartAt = useMemo(
     () => toIsoDateTime(searchForm.startDate, searchForm.startTime),
@@ -258,20 +464,38 @@ function App() {
   return (
     <main className="app-shell">
       <header className="app-header">
-        <div>
-          <p className="eyebrow">LOCKGO</p>
-          <h1>Find &amp; Reserve Locker</h1>
-          <p className="subtle">
-            Simple 4-screen flow for locker search, selection, reservation, and
-            confirmation.
-          </p>
+        <div className="toolbar">
+          <div>
+            <p className="eyebrow">LOCKGO</p>
+            <h1>{copy.title}</h1>
+            <p className="subtle">{copy.subtitle}</p>
+            <p className="helper-text">{copy.timeZoneNote}</p>
+          </div>
+          <div className="language-switch" aria-label={copy.labels.language}>
+            <button
+              className={`lang-chip ${locale === 'en' ? 'active' : ''}`}
+              type="button"
+              onClick={() => setLocale('en')}
+            >
+              EN
+            </button>
+            <button
+              className={`lang-chip ${locale === 'th' ? 'active' : ''}`}
+              type="button"
+              onClick={() => setLocale('th')}
+            >
+              TH
+            </button>
+          </div>
         </div>
         <div className="status-strip">
-          <span className={screen === 'find' ? 'active' : ''}>Find Locker</span>
-          <span className={screen === 'detail' ? 'active' : ''}>Locker Detail</span>
-          <span className={screen === 'reservation' ? 'active' : ''}>Reservation</span>
+          <span className={screen === 'find' ? 'active' : ''}>{copy.screens.find}</span>
+          <span className={screen === 'detail' ? 'active' : ''}>{copy.screens.detail}</span>
+          <span className={screen === 'reservation' ? 'active' : ''}>
+            {copy.screens.reservation}
+          </span>
           <span className={screen === 'confirmation' ? 'active' : ''}>
-            Confirmation
+            {copy.screens.confirmation}
           </span>
         </div>
       </header>
@@ -281,8 +505,8 @@ function App() {
           <div className="stack gap-large">
             <div className="toolbar">
               <div>
-                <h2>Find Locker</h2>
-                <p className="subtle">Search by location and basic filters.</p>
+                <h2>{copy.find.heading}</h2>
+                <p className="subtle">{copy.find.description}</p>
               </div>
               <button
                 className="button button-secondary"
@@ -290,7 +514,7 @@ function App() {
                 onClick={() => void loadLockers()}
                 disabled={listLoading}
               >
-                {listLoading ? 'Loading...' : 'Refresh'}
+                {listLoading ? copy.actions.loading : copy.actions.refresh}
               </button>
             </div>
 
@@ -302,8 +526,8 @@ function App() {
               }}
             >
               <label>
-                <span>Location</span>
-                <input
+                <span>{copy.labels.location}</span>
+                <select
                   value={searchForm.location}
                   onChange={(event) =>
                     setSearchForm((current) => ({
@@ -311,11 +535,18 @@ function App() {
                       location: event.target.value,
                     }))
                   }
-                />
+                >
+                  <option value="">{copy.find.allLocations}</option>
+                  {LOCATION_OPTIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {translateLocation(location, locale)}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label>
-                <span>Locker Size</span>
+                <span>{copy.labels.lockerSize}</span>
                 <select
                   value={searchForm.size}
                   onChange={(event) =>
@@ -325,17 +556,17 @@ function App() {
                     }))
                   }
                 >
-                  <option value="">All Sizes</option>
+                  <option value="">{copy.find.allSizes}</option>
                   {SIZE_OPTIONS.map((size) => (
                     <option key={size} value={size}>
-                      {labelForSize(size)}
+                      {labelForSize(size, locale)}
                     </option>
                   ))}
                 </select>
               </label>
 
               <label>
-                <span>Max Distance (m)</span>
+                <span>{copy.labels.maxDistance}</span>
                 <input
                   value={searchForm.maxDistanceMeters}
                   onChange={(event) =>
@@ -348,7 +579,7 @@ function App() {
               </label>
 
               <label>
-                <span>Max Price (cents)</span>
+                <span>{copy.labels.maxPrice}</span>
                 <input
                   value={searchForm.maxPriceCents}
                   onChange={(event) =>
@@ -361,7 +592,7 @@ function App() {
               </label>
 
               <label>
-                <span>Start Date</span>
+                <span>{copy.labels.startDate}</span>
                 <input
                   type="date"
                   value={searchForm.startDate}
@@ -375,7 +606,7 @@ function App() {
               </label>
 
               <label>
-                <span>Start Time</span>
+                <span>{copy.labels.startTime}</span>
                 <input
                   type="time"
                   value={searchForm.startTime}
@@ -389,7 +620,7 @@ function App() {
               </label>
 
               <label>
-                <span>Duration (hours)</span>
+                <span>{copy.labels.durationHours}</span>
                 <input
                   type="number"
                   min="1"
@@ -404,7 +635,7 @@ function App() {
               </label>
 
               <label>
-                <span>Sort</span>
+                <span>{copy.labels.sort}</span>
                 <select
                   value={searchForm.sort}
                   onChange={(event) =>
@@ -414,9 +645,9 @@ function App() {
                     }))
                   }
                 >
-                  <option value="most_available">Most Available</option>
-                  <option value="lowest_price">Lowest Price</option>
-                  <option value="nearest">Nearest</option>
+                  <option value="most_available">{copy.find.sortMostAvailable}</option>
+                  <option value="lowest_price">{copy.find.sortLowestPrice}</option>
+                  <option value="nearest">{copy.find.sortNearest}</option>
                 </select>
               </label>
 
@@ -431,12 +662,12 @@ function App() {
                     }))
                   }
                 />
-                <span>Only show available lockers</span>
+                <span>{copy.find.onlyAvailable}</span>
               </label>
 
               <div className="form-actions">
                 <button className="button" type="submit" disabled={listLoading}>
-                  Search
+                  {copy.actions.search}
                 </button>
               </div>
             </form>
@@ -446,8 +677,8 @@ function App() {
             <div className="list-grid">
               {lockers.length === 0 && !listLoading ? (
                 <div className="panel empty-state">
-                  <h3>No lockers found</h3>
-                  <p className="subtle">Try a different location or relax the filters.</p>
+                  <h3>{copy.find.noLockers}</h3>
+                  <p className="subtle">{copy.find.noLockersHint}</p>
                 </div>
               ) : (
                 lockers.map((locker) => (
@@ -456,29 +687,31 @@ function App() {
                       <div className="toolbar compact">
                         <div>
                           <h3>{locker.name}</h3>
-                          <p className="subtle">{locker.location}</p>
+                          <p className="subtle">{translateLocation(locker.location, locale)}</p>
                         </div>
-                        <span className="badge">{locker.operatingStatus}</span>
+                        <span className="badge">
+                          {translateOperatingStatus(locker.operatingStatus, locale)}
+                        </span>
                       </div>
                       <div className="meta-grid">
                         <MetaItem
-                          label="Distance"
-                          value={formatDistance(locker.distanceMeters)}
+                          label={copy.labels.distance}
+                          value={formatDistance(locker.distanceMeters, locale)}
                         />
                         <MetaItem
-                          label="Starting Price"
-                          value={formatPrice(locker.startingPriceCents)}
+                          label={copy.labels.startingPrice}
+                          value={formatPrice(locker.startingPriceCents, locale)}
                         />
                         <MetaItem
-                          label="Small"
+                          label={copy.labels.small}
                           value={String(locker.availability.SMALL)}
                         />
                         <MetaItem
-                          label="Medium"
+                          label={copy.labels.medium}
                           value={String(locker.availability.MEDIUM)}
                         />
                         <MetaItem
-                          label="Large"
+                          label={copy.labels.large}
                           value={String(locker.availability.LARGE)}
                         />
                       </div>
@@ -488,7 +721,7 @@ function App() {
                       type="button"
                       onClick={() => void openLocker(locker.id)}
                     >
-                      View Detail
+                      {copy.actions.viewDetail}
                     </button>
                   </article>
                 ))
@@ -501,7 +734,7 @@ function App() {
           <div className="stack gap-large">
             <div className="toolbar">
               <div>
-                <h2>Locker Detail</h2>
+                <h2>{copy.detail.heading}</h2>
                 <p className="subtle">{selectedLocker.address}</p>
               </div>
               <button
@@ -509,50 +742,56 @@ function App() {
                 type="button"
                 onClick={() => setScreen('find')}
               >
-                Back
+                {copy.actions.back}
               </button>
             </div>
 
-            {detailLoading && <p className="subtle">Loading locker detail...</p>}
+            {detailLoading && <p className="subtle">{copy.detail.loading}</p>}
             {detailError && <p className="error-text">{detailError}</p>}
 
             <div className="detail-layout">
               <section className="panel">
                 <h3>{selectedLocker.name}</h3>
                 <div className="meta-grid">
-                  <MetaItem label="Status" value={selectedLocker.operatingStatus} />
                   <MetaItem
-                    label="Distance"
-                    value={formatDistance(selectedLocker.distanceMeters)}
+                    label={copy.labels.status}
+                    value={translateOperatingStatus(selectedLocker.operatingStatus, locale)}
                   />
                   <MetaItem
-                    label="Operating Hours"
+                    label={copy.labels.distance}
+                    value={formatDistance(selectedLocker.distanceMeters, locale)}
+                  />
+                  <MetaItem
+                    label={copy.labels.operatingHours}
                     value={`${selectedLocker.operatingHours.openTime ?? '-'} - ${
                       selectedLocker.operatingHours.closeTime ?? '-'
                     }`}
                   />
                   <MetaItem
-                    label="Available Time"
+                    label={copy.labels.availableTime}
                     value={
                       selectedLocker.availableTime.startAt &&
                       selectedLocker.availableTime.endAt
-                        ? `${formatDateTime(selectedLocker.availableTime.startAt)} - ${formatDateTime(
+                        ? `${formatDateTime(selectedLocker.availableTime.startAt, locale)} - ${formatDateTime(
                             selectedLocker.availableTime.endAt,
+                            locale,
                           )}`
-                        : 'Not specified'
+                        : copy.detail.notSpecified
                     }
                   />
                 </div>
               </section>
 
               <section className="panel">
-                <h3>Sizes &amp; Availability</h3>
+                <h3>{copy.detail.sizesHeading}</h3>
                 <div className="size-list">
                   {SIZE_OPTIONS.map((size) => (
                     <div className="size-row" key={size}>
-                      <span>{labelForSize(size)}</span>
-                      <span>{selectedLocker.availability[size]} available</span>
-                      <span>{formatPrice(selectedLocker.priceBySizeCents[size] ?? null)}</span>
+                      <span>{labelForSize(size, locale)}</span>
+                      <span>
+                        {selectedLocker.availability[size]} {copy.detail.availableSuffix}
+                      </span>
+                      <span>{formatPrice(selectedLocker.priceBySizeCents[size] ?? null, locale)}</span>
                     </div>
                   ))}
                 </div>
@@ -562,7 +801,7 @@ function App() {
                     type="button"
                     onClick={() => setScreen('reservation')}
                   >
-                    Select Locker
+                    {copy.actions.selectLocker}
                   </button>
                 </div>
               </section>
@@ -574,24 +813,24 @@ function App() {
           <div className="stack gap-large">
             <div className="toolbar">
               <div>
-                <h2>Reservation</h2>
-                <p className="subtle">Fill the required fields and review the summary.</p>
+                <h2>{copy.reservation.heading}</h2>
+                <p className="subtle">{copy.reservation.description}</p>
               </div>
               <button
                 className="button button-secondary"
                 type="button"
                 onClick={() => setScreen('detail')}
               >
-                Back
+                {copy.actions.back}
               </button>
             </div>
 
             <div className="detail-layout">
               <form className="panel stack gap-medium" onSubmit={handleReservationSubmit}>
                 <label>
-                  <span>User ID</span>
+                  <span>{copy.labels.userId}</span>
                   <input
-                    placeholder="Required by the current backend contract"
+                    placeholder={copy.reservation.userIdPlaceholder}
                     value={reservationForm.userId}
                     onChange={(event) =>
                       setReservationForm((current) => ({
@@ -600,10 +839,11 @@ function App() {
                       }))
                     }
                   />
+                  <small className="helper-text">{copy.reservation.userIdHelper}</small>
                 </label>
 
                 <label>
-                  <span>Locker Size</span>
+                  <span>{copy.labels.lockerSize}</span>
                   <select
                     value={reservationForm.size}
                     onChange={(event) =>
@@ -615,14 +855,14 @@ function App() {
                   >
                     {SIZE_OPTIONS.map((size) => (
                       <option key={size} value={size}>
-                        {labelForSize(size)}
+                        {labelForSize(size, locale)}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label>
-                  <span>Start Date</span>
+                  <span>{copy.labels.startDate}</span>
                   <input
                     type="date"
                     value={reservationForm.startDate}
@@ -636,7 +876,7 @@ function App() {
                 </label>
 
                 <label>
-                  <span>Start Time</span>
+                  <span>{copy.labels.startTime}</span>
                   <input
                     type="time"
                     value={reservationForm.startTime}
@@ -650,7 +890,7 @@ function App() {
                 </label>
 
                 <label>
-                  <span>Duration (hours)</span>
+                  <span>{copy.labels.durationHours}</span>
                   <input
                     type="number"
                     min="1"
@@ -665,9 +905,9 @@ function App() {
                 </label>
 
                 <label>
-                  <span>Idempotency Key</span>
+                  <span>{copy.labels.idempotencyKey}</span>
                   <input
-                    placeholder="Optional"
+                    placeholder={copy.reservation.idempotencyPlaceholder}
                     value={reservationForm.idempotencyKey}
                     onChange={(event) =>
                       setReservationForm((current) => ({
@@ -682,53 +922,55 @@ function App() {
 
                 <div className="panel-actions">
                   <button className="button" type="submit" disabled={reservationLoading}>
-                    {reservationLoading ? 'Submitting...' : 'Confirm Reservation'}
+                    {reservationLoading
+                      ? copy.actions.submitting
+                      : copy.actions.confirmReservation}
                   </button>
                 </div>
               </form>
 
               <section className="panel stack gap-medium">
-                <h3>Reservation Summary</h3>
-                <SummaryRow label="Locker" value={selectedLocker.name} />
-                <SummaryRow label="Location" value={selectedLocker.address} />
+                <h3>{copy.reservation.summaryHeading}</h3>
+                <SummaryRow label={copy.labels.locker} value={selectedLocker.name} />
+                <SummaryRow label={copy.labels.location} value={selectedLocker.address} />
                 <SummaryRow
-                  label="Compartment Size"
-                  value={labelForSize(reservationForm.size)}
+                  label={copy.labels.compartmentSize}
+                  value={labelForSize(reservationForm.size, locale)}
                 />
                 <SummaryRow
-                  label="Start Time"
-                  value={formatDateTime(reservationStartAt)}
+                  label={copy.labels.startTime}
+                  value={formatDateTime(reservationStartAt, locale)}
                 />
                 <SummaryRow
-                  label="End Time"
+                  label={copy.labels.endTime}
                   value={
                     reservationSummary
-                      ? formatDateTime(reservationSummary.endAt)
-                      : 'Incomplete'
+                      ? formatDateTime(reservationSummary.endAt, locale)
+                      : copy.reservation.incomplete
                   }
                 />
                 <SummaryRow
-                  label="Duration"
+                  label={copy.labels.duration}
                   value={
                     reservationSummary
-                      ? `${reservationSummary.durationHours} hours`
-                      : 'Incomplete'
+                      ? formatDurationHours(reservationSummary.durationHours, locale)
+                      : copy.reservation.incomplete
                   }
                 />
                 <SummaryRow
-                  label="Price / hour"
+                  label={copy.labels.pricePerHour}
                   value={
                     reservationSummary
-                      ? formatPrice(reservationSummary.pricePerHourCents)
-                      : 'Unavailable'
+                      ? formatPrice(reservationSummary.pricePerHourCents, locale)
+                      : copy.reservation.unavailable
                   }
                 />
                 <SummaryRow
-                  label="Total Price"
+                  label={copy.labels.totalPrice}
                   value={
                     reservationSummary
-                      ? formatPrice(reservationSummary.totalPriceCents)
-                      : 'Unavailable'
+                      ? formatPrice(reservationSummary.totalPriceCents, locale)
+                      : copy.reservation.unavailable
                   }
                 />
               </section>
@@ -740,40 +982,46 @@ function App() {
           <div className="stack gap-large">
             <div className="toolbar">
               <div>
-                <h2>Confirmation</h2>
-                <p className="subtle">Reservation created successfully.</p>
+                <h2>{copy.confirmation.heading}</h2>
+                <p className="subtle">{copy.confirmation.description}</p>
               </div>
               <button
                 className="button button-secondary"
                 type="button"
                 onClick={() => setScreen('find')}
               >
-                New Search
+                {copy.actions.newSearch}
               </button>
             </div>
 
             <section className="panel stack gap-medium">
-              <SummaryRow label="Booking Number" value={reservation.reservationNumber} />
-              <SummaryRow label="Locker" value={reservation.locker.name} />
-              <SummaryRow label="Location" value={reservation.locker.address} />
+              <SummaryRow label={copy.labels.bookingNumber} value={reservation.reservationNumber} />
+              <SummaryRow label={copy.labels.locker} value={reservation.locker.name} />
+              <SummaryRow label={copy.labels.location} value={reservation.locker.address} />
               <SummaryRow
-                label="Compartment"
-                value={`${labelForSize(reservation.compartment.size)} (${reservation.compartment.code})`}
-              />
-              <SummaryRow label="Start Time" value={formatDateTime(reservation.startAt)} />
-              <SummaryRow
-                label="Expiration / End Time"
-                value={formatDateTime(reservation.endAt)}
+                label={copy.labels.compartment}
+                value={`${labelForSize(reservation.compartment.size, locale)} (${reservation.compartment.code})`}
               />
               <SummaryRow
-                label="Price / hour"
-                value={formatPrice(reservation.pricePerHourCents)}
+                label={copy.labels.startTime}
+                value={formatDateTime(reservation.startAt, locale)}
               />
               <SummaryRow
-                label="Total Price"
-                value={formatPrice(reservation.totalPriceCents)}
+                label={copy.labels.expirationEndTime}
+                value={formatDateTime(reservation.endAt, locale)}
               />
-              <SummaryRow label="Booking Status" value={reservation.status} />
+              <SummaryRow
+                label={copy.labels.pricePerHour}
+                value={formatPrice(reservation.pricePerHourCents, locale)}
+              />
+              <SummaryRow
+                label={copy.labels.totalPrice}
+                value={formatPrice(reservation.totalPriceCents, locale)}
+              />
+              <SummaryRow
+                label={copy.labels.bookingStatus}
+                value={translateReservationStatus(reservation.status, locale)}
+              />
             </section>
           </div>
         )}
@@ -800,14 +1048,19 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function labelForSize(size: LockerSize): string {
+function labelForSize(size: LockerSize, locale: Locale): string {
+  const labels =
+    locale === 'th'
+      ? { SMALL: 'เล็ก', MEDIUM: 'กลาง', LARGE: 'ใหญ่' }
+      : { SMALL: 'Small', MEDIUM: 'Medium', LARGE: 'Large' }
+
   switch (size) {
     case 'SMALL':
-      return 'Small'
+      return labels.SMALL
     case 'MEDIUM':
-      return 'Medium'
+      return labels.MEDIUM
     case 'LARGE':
-      return 'Large'
+      return labels.LARGE
   }
 }
 
@@ -819,25 +1072,59 @@ function chooseDefaultSize(locker: LockerDetail): LockerSize {
   )
 }
 
-function formatDistance(distanceMeters: number | null): string {
+function formatDistance(distanceMeters: number | null, locale: Locale): string {
   if (distanceMeters === null) return '-'
-  return `${distanceMeters} m`
+  return locale === 'th' ? `${distanceMeters} ม.` : `${distanceMeters} m`
 }
 
-function formatPrice(value: number | null): string {
+function formatPrice(value: number | null, locale: Locale): string {
   if (value === null) return '-'
-  return `${(value / 100).toFixed(2)}`
+  const amount = new Intl.NumberFormat(locale === 'th' ? 'th-TH' : 'en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value / 100)
+  return locale === 'th' ? `${amount} บาท` : `${amount} THB`
 }
 
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
+function formatDateTime(value: string, locale: Locale): string {
+  return `${new Intl.DateTimeFormat(locale === 'th' ? 'th-TH' : 'en-GB', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value))
+    timeZone: THAILAND_TIME_ZONE,
+  }).format(new Date(value))}${locale === 'th' ? ' เวลาไทย' : ' ICT'}`
 }
 
 function toIsoDateTime(date: string, time: string): string {
-  return new Date(`${date}T${time}:00`).toISOString()
+  return new Date(`${date}T${time}:00${THAILAND_UTC_OFFSET}`).toISOString()
+}
+
+function formatDurationHours(value: number, locale: Locale): string {
+  return locale === 'th' ? `${value} ชั่วโมง` : `${value} hours`
+}
+
+function translateLocation(value: string, locale: Locale): string {
+  const labels = LOCATION_LABELS[value]
+  if (!labels) return value
+  return labels[locale]
+}
+
+function translateOperatingStatus(value: string, locale: Locale): string {
+  if (locale === 'th') {
+    if (value === 'OPERATIONAL') return 'พร้อมให้บริการ'
+    if (value === 'OUT_OF_SERVICE') return 'ปิดให้บริการ'
+  }
+  return value
+}
+
+function translateReservationStatus(value: ReservationStatus, locale: Locale): string {
+  if (locale === 'th') {
+    if (value === 'RESERVED') return 'จองแล้ว'
+    if (value === 'ACTIVE') return 'กำลังใช้งาน'
+    if (value === 'COMPLETED') return 'เสร็จสิ้น'
+    if (value === 'CANCELLED') return 'ยกเลิกแล้ว'
+    if (value === 'EXPIRED') return 'หมดอายุ'
+  }
+  return value
 }
 
 function toApiError(value: unknown): ApiError {

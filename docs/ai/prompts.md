@@ -1,86 +1,73 @@
 # AI Prompts Used
 
-This file records the main AI prompt intents used during development work for this assessment.
+ตัวอย่าง Prompt หลักที่ใช้ระหว่างการพัฒนา LockGo Assessment และสิ่งที่นำไปใช้จากคำตอบของ AI
 
-It focuses on prompt logic, process, developer decisions, and outcomes. It does not reproduce conversational chat phrasing.
+## Prompt 1 — Requirement & Repository Analysis
 
-## Prompt 1 — Repository and Requirement Analysis
+> อ่าน `AGENTS.md`, Technical Assessment, PRD และตรวจโครงสร้าง repository ปัจจุบัน  
+> สรุป requirement ที่ต้องทำ, สิ่งที่มีอยู่แล้ว, สิ่งที่ยังขาด และความเสี่ยงที่ควรจัดการก่อนเริ่มแก้โค้ด
 
-### Goal
+**ใช้ทำอะไร**
 
-Establish a structured pre-implementation review before any code changes:
-- read AGENTS.md
-- read assessment PDFs
-- inspect repository state
-- inspect git status
-- inspect frontend/backend/Prisma/docker configuration
-- summarize what is done and what is missing
+ใช้ AI ช่วยทำความเข้าใจ project ก่อนเริ่ม development เพื่อไม่ให้ implement feature เกินหรือขาดจาก requirement
 
-### AI Support Logic
+ผลที่ได้ถูกนำมาใช้แบ่งงานออกเป็น Backend, Reservation Safety, Frontend และ Documentation
 
-- collect source-of-truth requirements first
-- inspect the existing implementation before proposing work
-- separate current state, missing scope, risks, and next milestone
+---
 
-## Prompt 2 — Git Workflow Planning
+## Prompt 2 — Reservation Concurrency Safety
 
-### Goal
+> Review reservation creation flow โดยโฟกัสกรณีที่เหลือ compartment เพียง 1 ช่อง แล้วมีหลาย request พยายามจองพร้อมกัน  
+> เสนอวิธีป้องกัน double booking ที่ backend/database และเพิ่ม integration test เพื่อพิสูจน์ behavior นี้
 
-Define a simple Git workflow that fits the assessment scope and produces reviewable milestone history.
+**ใช้ทำอะไร**
 
-### AI Support Logic
+ใช้ AI ช่วยวิเคราะห์ Race Condition และสร้างแนวทางป้องกัน Concurrent Booking
 
-- choose a single-repository strategy
-- keep branch naming simple and professional
-- separate work into milestone branches instead of mixing unrelated changes
+หลัง review ผมเลือกใช้ Database Transaction และ `FOR UPDATE SKIP LOCKED` พร้อมเพิ่ม Concurrent Integration Test
 
-### Developer Decision
+---
 
-- Use a single GitHub repository
-- Keep branch names simple and non-tool-branded
-- Adopt:
-  - `main`
-  - `backend-foundation`
-  - `reservation-safety`
-  - `frontend-reservation-flow`
-  - `project-docs`
+## Prompt 3 — Duplicate Confirm / Idempotency
 
-## Prompt 3 — Concurrency Safety Scope
+> ตรวจสอบกรณีผู้ใช้กด Confirm Reservation ซ้ำอย่างรวดเร็ว  
+> ออกแบบ backend idempotency เพื่อให้ request เดิมไม่สร้าง Reservation ใหม่ และเพิ่ม test สำหรับกรณี duplicate request
 
-### Goal
+**ใช้ทำอะไร**
 
-Limit the branch scope to the explicit concurrent booking requirement from the assessment.
+ใช้ AI ช่วยวิเคราะห์ปัญหา Duplicate Reservation และเสนอ implementation สำหรับ Idempotency
 
-### AI Support Logic
+ผลลัพธ์คือ Backend รองรับ Idempotency Key และ request เดิมสามารถคืน Reservation เดิมได้โดยไม่สร้างข้อมูลซ้ำ
 
-- focus only on concurrent reservation correctness
-- avoid unrelated frontend or documentation work
-- prefer a database-level correctness strategy instead of frontend-only protection
+---
 
-### Developer Decision
+## Prompt 4 — Runtime Debugging
 
-- Restrict the branch scope to:
-  - database-level concurrent booking protection
-  - concurrent integration coverage
-- Avoid unrelated frontend or documentation work in that branch
+> ตรวจสอบว่าทำไม Frontend ที่รันผ่าน Vite จึงเรียก Backend API ไม่สำเร็จ  
+> ตรวจ CORS, API configuration และ local seed data โดยแก้เฉพาะสิ่งที่จำเป็นสำหรับ demo และไม่เพิ่ม feature นอก scope
 
-## Prompt 4 — Project Documentation Scope
+**ใช้ทำอะไร**
 
-### Goal
+ใช้ AI ช่วย Debug การทำงานจริงบน Local Environment
 
-Prioritize submission documents required by the assessment before moving to additional feature work.
+หลังตรวจสอบ ผมเปิด CORS สำหรับ Local Frontend และปรับ Seed Data ให้สามารถทดลอง Reservation Flow ซ้ำได้ง่ายขึ้น
 
-### AI Support Logic
+---
 
-- create only the required documentation artifacts
-- avoid adding optional documentation beyond current implementation scope
-- document actual work completed in the repository
+## Prompt 5 — Documentation Review
 
-### Developer Decision
+> Review repository ปัจจุบันและสร้างเฉพาะ documentation ที่ Technical Assessment ต้องส่ง  
+> เอกสารต้องอธิบายจาก implementation ที่มีอยู่จริง และไม่เขียน feature ที่ยังไม่ได้ implement
 
-- Prioritize required submission documents before frontend
-- Add only:
-  - `README.md`
-  - `docs/ai/prompts.md`
-  - `docs/ai/workflow.md`
-  - `docs/ai/code-review.md`
+**ใช้ทำอะไร**
+
+ใช้ AI ช่วยจัดโครงสร้างและตรวจความครบถ้วนของเอกสาร
+
+เอกสารหลักที่จัดทำคือ:
+
+- `README.md`
+- `docs/ai/prompts.md`
+- `docs/ai/workflow.md`
+- `docs/ai/code-review.md`
+
+เนื้อหาสุดท้ายถูกตรวจและปรับให้ตรงกับ implementation ใน repository ก่อนนำไปใช้

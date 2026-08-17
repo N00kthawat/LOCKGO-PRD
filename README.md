@@ -1,22 +1,38 @@
 # LOCKGO Assessment
 
-## Project Overview
+## ภาพรวมโปรเจกต์
 
-LOCKGO is a technical assessment project for the feature `Find & Reserve Locker`.
+โปรเจกต์นี้เป็น Technical Assessment สำหรับ feature `Find & Reserve Locker`
 
-The current implementation covers the core assessment flow across backend and frontend:
+ขอบเขตที่ทำเสร็จแล้วใน repository นี้ครอบคลุม flow หลักทั้ง backend และ frontend:
 - locker search API
 - locker detail API
 - reservation creation API
 - reservation detail API
-- Prisma schema and migration
-- frontend locker search and reservation flow
-- reservation business rule tests
-- concurrent booking protection
+- Prisma schema และ migration
+- frontend 4 หน้าสำหรับค้นหาและจอง locker
+- test ของ business rules ฝั่ง reservation
+- การป้องกัน concurrent booking
 
-## Architecture
+## สรุปสิ่งที่ส่ง
 
-The repository is organized as a single assessment project:
+- Frontend: มี 4 screens ตามโจทย์ในแอป React เดียว
+- Backend: มี required APIs ของ locker และ reservation
+- Database: มี Prisma schema, migration และ seed data
+- Testing: มี unit test และ e2e test สำหรับ reservation rules และ API behavior
+- AI evidence: มี prompts, workflow, code review notes และ debugging notes ใน `docs/ai/`
+
+## สถานะการตรวจสอบล่าสุด
+
+- frontend build ผ่าน
+- backend build ผ่าน
+- backend unit tests ผ่าน
+- backend e2e tests ผ่าน
+- GitHub Actions CI ผ่าน
+
+## สถาปัตยกรรม
+
+repository นี้จัดเป็น assessment project แบบ repo เดียว:
 
 ```text
 lockgo/
@@ -28,13 +44,13 @@ lockgo/
 └── docker-compose.yml
 ```
 
-Current implementation status:
-- `frontend/`: simple 4-screen reservation flow connected to the API
-- `backend/`: locker and reservation domain implementation
-- `docs/assessment/`: source-of-truth PDFs
-- `docs/ai/`: AI workflow evidence
+สถานะปัจจุบันของแต่ละส่วน:
+- `frontend/`: flow การจองแบบ 4 หน้า เชื่อมกับ API แล้ว
+- `backend/`: implement domain ของ locker และ reservation แล้ว
+- `docs/assessment/`: เก็บ PDF ที่เป็น source of truth
+- `docs/ai/`: เก็บหลักฐานการใช้ AI
 
-### Architecture Overview
+### ภาพรวมสถาปัตยกรรม
 
 ```mermaid
 flowchart TD
@@ -48,7 +64,7 @@ flowchart TD
     PRISMA --> DB["PostgreSQL 17 (Docker)"]
 ```
 
-## Technology
+## เทคโนโลยี
 
 - Frontend: React, TypeScript, Vite
 - Backend: NestJS, TypeScript
@@ -57,15 +73,15 @@ flowchart TD
 - Package manager: pnpm
 - Test: Jest, Supertest
 
-## Installation
+## การติดตั้ง
 
-### Prerequisites
+### สิ่งที่ต้องมี
 
 - Node.js 22+
 - pnpm
 - Docker / Docker Compose
 
-### Install dependencies
+### ติดตั้ง dependencies
 
 ```bash
 cd frontend
@@ -75,38 +91,50 @@ cd ../backend
 pnpm install
 ```
 
-## Configuration
+## การตั้งค่า
 
-Backend uses `.env` with this development database connection:
+backend ใช้ `.env` ด้วย connection string นี้สำหรับ development:
 
 ```env
 DATABASE_URL="postgresql://lockgo:lockgo@127.0.0.1:5433/lockgo"
+PORT=3000
 ```
 
-Use [backend/.env.example](/Users/nookthawat/KHOOMKHA/lockgo/backend/.env.example) as the template.
+ใช้ [backend/.env.example](/Users/nookthawat/KHOOMKHA/lockgo/backend/.env.example) เป็นต้นแบบได้
 
-## Database Setup
+frontend ใช้ค่า default นี้สำหรับเรียก backend บนเครื่อง:
 
-Start PostgreSQL:
+```env
+VITE_API_BASE_URL="http://localhost:3000"
+```
+
+ports ที่ใช้ใน local development:
+- PostgreSQL Docker: `127.0.0.1:5433`
+- Backend API: `http://localhost:3000`
+- Frontend Vite: `http://localhost:5173`
+
+## การตั้งค่า Database
+
+เริ่ม PostgreSQL:
 
 ```bash
 docker compose up -d
 ```
 
-Run Prisma migration:
+รัน Prisma migration:
 
 ```bash
 cd backend
 pnpm exec prisma migrate dev
 ```
 
-Seed local data:
+seed ข้อมูลสำหรับ local:
 
 ```bash
 pnpm db:seed
 ```
 
-## Run Application
+## การรันระบบ
 
 ### Backend
 
@@ -115,8 +143,11 @@ cd backend
 pnpm start:dev
 ```
 
-Default port:
+port ปกติ:
 - `3000`
+- Swagger / OpenAPI:
+  - `http://localhost:3000/api/docs`
+  - OpenAPI JSON: `http://localhost:3000/api/docs-json`
 
 ### Frontend
 
@@ -125,10 +156,53 @@ cd frontend
 pnpm dev
 ```
 
-Default Vite port:
+Vite port ปกติ:
 - `5173`
 
-## Run Test
+frontend build:
+
+```bash
+cd frontend
+pnpm build
+```
+
+## วิธีลองใช้งาน Demo
+
+ใช้ลำดับนี้สำหรับทดสอบ flow แบบ end-to-end บนเครื่อง:
+
+1. เปิด Docker PostgreSQL ด้วย `docker compose up -d`
+2. รัน backend ด้วย `cd backend && pnpm start:dev`
+3. รัน frontend ด้วย `cd frontend && pnpm dev`
+4. เปิด `http://localhost:5173`
+5. ที่หน้า Find Locker:
+   - เลือก location จาก dropdown
+   - ถ้าจะลองแบบเจอง่าย แนะนำเริ่มที่ `Bangkok`
+   - ใช้ `Start Date = 2026-08-18`
+   - ใช้ `Start Time = 12:00`
+   - ใช้ `Duration = 2`
+   - กด `Search`
+6. เปิด locker จากรายการผลลัพธ์
+7. ที่หน้า Reservation:
+   - demo user เริ่มต้นคือ `demo-user-001`
+   - ถ้าจะลอง idempotency key ใช้ตัวอย่าง `booking-demo-001`
+   - กด `Confirm Reservation`
+
+### ข้อมูล demo ที่ seed ไว้
+
+- Demo user ID: `demo-user-001`
+- Sample locations:
+  - Bangkok
+  - Chiang Mai
+  - Phuket
+  - Chonburi
+  - Khon Kaen
+  - Songkhla
+  - Ayutthaya
+  - Nakhon Ratchasima
+  - Prachuap Khiri Khan
+  - Udon Thani
+
+## การรัน Test
 
 ### Backend unit tests
 
@@ -155,7 +229,7 @@ pnpm build
 
 ### `GET /api/lockers`
 
-Search lockers with optional filters:
+ใช้ค้นหา lockers โดยรองรับ filters ต่อไปนี้:
 - `location`
 - `latitude`
 - `longitude`
@@ -170,11 +244,11 @@ Search lockers with optional filters:
 
 ### `GET /api/lockers/:id`
 
-Get locker detail and size availability.
+ใช้ดูรายละเอียด locker และ availability แยกตามขนาด
 
 ### `POST /api/reservations`
 
-Create a reservation.
+ใช้สร้าง reservation
 
 Request body:
 
@@ -189,12 +263,12 @@ Request body:
 }
 ```
 
-Also supports:
+รองรับเพิ่มเติม:
 - `x-idempotency-key` header
 
 ### `GET /api/reservations/:id`
 
-Get reservation detail for confirmation view.
+ใช้ดึงรายละเอียด reservation สำหรับหน้า confirmation
 
 ### Error Contract
 
@@ -205,67 +279,156 @@ Get reservation detail for confirmation view.
 }
 ```
 
+### Swagger / OpenAPI
+
+backend เปิดเอกสาร API แบบ interactive ผ่าน Swagger UI ที่:
+
+- `http://localhost:3000/api/docs`
+
+และ JSON document ที่:
+
+- `http://localhost:3000/api/docs-json`
+
+status code ที่ใช้บ่อยใน API ชุดนี้:
+- `200 OK`
+- `201 Created`
+- `400 Bad Request`
+- `404 Not Found`
+- `409 Conflict`
+
+## Frontend Screens
+
+- Screen 1: Find Locker
+  - location search
+  - filters
+  - locker list
+  - availability
+  - price
+- Screen 2: Locker Detail
+  - locker information
+  - location
+  - available compartments
+  - price
+  - select button
+- Screen 3: Reservation
+  - selected locker
+  - compartment size
+  - start date และ time
+  - duration
+  - reservation summary
+  - confirm button
+- Screen 4: Confirmation
+  - booking number
+  - locker
+  - location
+  - compartment
+  - start time
+  - expiration time
+  - booking status
+- รองรับสลับภาษา `ไทย / English`
+- เวลาใน UI แสดงเป็นเวลาไทย (ICT)
+
 ## AI Tools
 
-AI tools used during this assessment:
+AI tools ที่ใช้ใน assessment นี้:
 - Codex
 
-Related evidence:
+หลักฐานที่เกี่ยวข้อง:
 - [docs/ai/prompts.md](/Users/nookthawat/KHOOMKHA/lockgo/docs/ai/prompts.md)
 - [docs/ai/workflow.md](/Users/nookthawat/KHOOMKHA/lockgo/docs/ai/workflow.md)
 - [docs/ai/code-review.md](/Users/nookthawat/KHOOMKHA/lockgo/docs/ai/code-review.md)
+- [docs/ai/debugging-challenge.md](/Users/nookthawat/KHOOMKHA/lockgo/docs/ai/debugging-challenge.md)
 
-## Architecture Decisions
+## การตัดสินใจด้านสถาปัตยกรรม
 
-- Keep the assessment in a single repository instead of splitting frontend/backend into separate repos.
-- Model reservation correctness around `Compartment`, because booking conflicts happen at compartment level.
-- Use Prisma with PostgreSQL and a Docker database for predictable local setup.
-- Add database-level concurrency protection in reservation creation using transaction isolation and row locking.
+- ใช้ repository เดียวสำหรับ assessment นี้ แทนการแยก frontend/backend เป็นคนละ repo
+- วาง correctness ของ reservation ไว้ที่ระดับ `Compartment` เพราะ conflict ของการจองเกิดที่ช่อง locker
+- ใช้ Prisma กับ PostgreSQL และ Docker database เพื่อให้ setup บน local คงที่
+- เพิ่ม concurrency protection ระดับ database ในขั้นตอนสร้าง reservation ด้วย transaction isolation และ row locking
 
 ## Business Rules
 
-- A user can reserve only an available compartment in the requested time range.
-- The same compartment cannot be reserved with overlapping time windows.
-- Expired reservations must not block availability.
-- Reservation numbers must be unique.
-- Duplicate confirm requests must not create duplicate reservations.
-- Concurrent booking for the last available compartment must succeed only once.
+- ผู้ใช้จองได้เฉพาะ compartment ที่ว่างในช่วงเวลาที่ต้องการ
+- compartment เดียวกันห้ามมี reservation ที่เวลาซ้อนกัน
+- reservation ที่หมดอายุแล้วต้องไม่ block availability
+- reservation number ต้องไม่ซ้ำกัน
+- การกด confirm ซ้ำต้องไม่สร้าง reservation ซ้ำ
+- การแย่งจองช่องสุดท้ายพร้อมกันต้องสำเร็จได้เพียงรายการเดียว
 
 ## Assumptions
 
-- Authentication is out of scope for the current implementation, so `userId` is provided directly in the request body.
-- Reservation duration is handled as a positive integer number of hours.
-- API documentation is currently maintained manually in README instead of Swagger.
+- authentication อยู่นอก scope ปัจจุบัน จึงส่ง `userId` ตรงใน request body
+- duration ของ reservation จัดการเป็นจำนวนชั่วโมงเต็มที่เป็นบวก
+- frontend ใช้ `VITE_API_BASE_URL` และ default เป็น `http://localhost:3000` สำหรับ local development
 
 ## Concurrency Strategy
 
-- Reservation creation runs inside a serializable transaction.
-- Candidate compartments are selected with row locking using `FOR UPDATE SKIP LOCKED`.
-- Availability is re-checked inside the transaction before insert.
-- In a race for the last available compartment, one request succeeds and the competing request receives `409 Conflict`.
+- การสร้าง reservation รันใน serializable transaction
+- เลือก candidate compartments ด้วย row locking แบบ `FOR UPDATE SKIP LOCKED`
+- re-check availability ภายใน transaction ก่อน insert
+- ถ้าแข่งกันจองช่องสุดท้าย จะมีเพียง request เดียวที่สำเร็จ และอีกฝั่งจะได้ `409 Conflict`
 
 ## Idempotency Strategy
 
-- Reservation creation accepts an idempotency key.
-- The system stores `idempotencyKey` together with `userId`.
-- Repeating the same request with the same key returns the existing reservation instead of creating a duplicate row.
+- การสร้าง reservation รองรับ idempotency key
+- ระบบเก็บ `idempotencyKey` ควบกับ `userId`
+- ถ้ายิง request เดิมซ้ำด้วย key เดิม ระบบจะคืน reservation เดิมแทนการสร้าง row ใหม่
+
+## Debugging Challenge
+
+โจทย์จาก assessment:
+- ผู้ใช้กด `Confirm Reservation` สองครั้งติดกัน
+- ระบบสร้าง reservation สองรายการ
+
+การวิเคราะห์:
+- การ disable ปุ่มที่ frontend อย่างเดียวไม่พอ เพราะอาจมีสอง request หลุดออกไปแล้ว
+- ถ้า backend ใช้วิธี read-then-insert แบบไม่มีตัวป้องกัน ก็ยังเสี่ยงสร้างซ้ำได้
+- duplicate confirm กับ concurrent booking เป็นปัญหาที่เกี่ยวกัน แต่ไม่ใช่เรื่องเดียวกัน
+
+วิธีที่โปรเจกต์นี้ใช้ตรวจ:
+- inspect พฤติกรรม request จาก frontend
+- inspect ว่าใช้ idempotency key เดิมหรือไม่
+- inspect backend logs และ API responses
+- verify row ใน database ว่ามีการสร้างซ้ำใน user/time window เดียวกันหรือไม่
+- รัน automated tests สำหรับ duplicate confirm และ concurrent booking
+
+วิธีแก้ที่ implement:
+- frontend รองรับ `idempotencyKey` แบบ optional
+- backend รับ idempotency key ได้ทั้งจาก body และ `x-idempotency-key`
+- backend เก็บ unique `(userId, idempotencyKey)`
+- backend re-check availability ใน serializable transaction
+- backend lock candidate compartments ด้วย `FOR UPDATE SKIP LOCKED`
+
+การป้องกันไม่ให้เกิดซ้ำ:
+- การกดซ้ำของ user คนเดิมจัดการด้วย idempotency
+- การแย่งจองช่องสุดท้ายพร้อมกันจัดการด้วย transaction + locking ที่ database
+- มี automated tests รองรับทั้งสองกรณี
 
 ## Trade-offs
 
-- The current API uses direct request body values for `userId` instead of a real auth layer to keep the assessment scope small.
-- Manual API documentation is simpler for the current scope, but Swagger would be better if time allows.
-- The current concurrency protection is focused on reservation correctness, not on generalized queueing or booking throughput optimization.
+- API ปัจจุบันใช้ `userId` จาก request body แทน auth จริง เพื่อคุม scope ของ assessment
+- การเขียน API documentation แบบ manual ง่ายกว่าใน scope ปัจจุบัน แต่ถ้ามีเวลาเพิ่ม Swagger จะเหมาะกว่า
+- concurrency protection ปัจจุบันเน้น reservation correctness มากกว่าการ optimize throughput ของระบบจองโดยรวม
 
 ## Known Limitations
 
-- Root-level CI/CD is not implemented yet.
-- Swagger / OpenAPI is not implemented yet.
-- No production deployment setup is included.
-- Reservation history endpoint is not implemented yet.
+- ยังไม่มี production deployment setup
+- ยังไม่มี reservation history endpoint
+- reservation ยังใช้ `userId` ตรง เพราะยังไม่มี authentication จริง
+- ไม่มี real payment, locker hardware integration หรือ QR unlock จริง
+- การค้นหา location ใน assessment นี้ใช้ข้อมูลและ filters ตาม scope ปัจจุบัน ยังไม่ได้ต่อ map service จริง
 
 ## Future Improvements
 
-- Add reservation history API.
-- Add Swagger / OpenAPI documentation.
-- Add CI for test and build verification.
-- Add authentication if time allows after core assessment requirements are complete.
+- เพิ่ม reservation history API
+- เพิ่ม Swagger / OpenAPI ให้ละเอียดขึ้นในระดับ schema และ examples
+- เพิ่ม CI สำหรับ verify test และ build เพิ่มเติมเมื่อ workflow โตขึ้น
+- เพิ่ม authentication ถ้ามีเวลาหลัง core assessment เสร็จ
+
+## CI
+
+มี GitHub Actions workflow สำหรับ verify งานหลักใน repository:
+- frontend build
+- backend build
+- backend unit tests
+- backend e2e tests
