@@ -125,6 +125,9 @@ pnpm start:dev
 
 port ปกติ:
 - `3000`
+- Swagger / OpenAPI:
+  - `http://localhost:3000/api/docs`
+  - OpenAPI JSON: `http://localhost:3000/api/docs-json`
 
 ### Frontend
 
@@ -248,6 +251,16 @@ Request body:
 }
 ```
 
+### Swagger / OpenAPI
+
+backend เปิดเอกสาร API แบบ interactive ผ่าน Swagger UI ที่:
+
+- `http://localhost:3000/api/docs`
+
+และ JSON document ที่:
+
+- `http://localhost:3000/api/docs-json`
+
 ## Frontend Screens
 
 - Screen 1: Find Locker
@@ -362,14 +375,18 @@ AI tools ที่ใช้ใน assessment นี้:
 
 ## Known Limitations
 
-- ยังไม่มี root-level CI/CD
-- ยังไม่ได้ทำ Swagger / OpenAPI
 - ยังไม่มี production deployment setup
 - ยังไม่มี reservation history endpoint
 
 ## Future Improvements
 
 - เพิ่ม reservation history API
-- เพิ่ม Swagger / OpenAPI documentation
-- เพิ่ม CI สำหรับ verify test และ build
 - เพิ่ม authentication ถ้ามีเวลาหลัง core assessment เสร็จ
+
+## CI
+
+มี GitHub Actions workflow สำหรับ verify งานหลักใน repository:
+- frontend build
+- backend build
+- backend unit tests
+- backend e2e tests

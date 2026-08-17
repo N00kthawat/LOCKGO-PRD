@@ -1,147 +1,113 @@
 # AI-Assisted Development Workflow
 
-เอกสารนี้อธิบายว่าใช้ AI ระหว่าง assessment นี้อย่างไร และจุดไหนที่ developer เป็นคนตัดสินใจเอง
+โปรเจกต์นี้ใช้ AI เป็น Coding Partner ในการวิเคราะห์ requirement, ช่วย implement, debug และ review code โดย Developer เป็นผู้ตัดสินใจเรื่อง scope, architecture และตรวจสอบผลลัพธ์ก่อนนำไปใช้
 
 ## Workflow
 
 ```text
 Requirement
 ↓
-AI-assisted repository and requirement analysis
+AI-assisted Analysis
 ↓
-Developer review of source-of-truth documents
+Developer Review & Planning
 ↓
-Milestone planning
+AI-assisted Implementation
 ↓
-AI-assisted implementation
+Developer Code Review
 ↓
-Developer review of code structure and scope
+Testing & Debugging
 ↓
-Testing
-↓
-Bug fixing
-↓
-AI-assisted code review notes
-↓
-Final code
+Final Code
 ```
 
-## ใช้ AI อย่างไรบ้าง
+## 1. Requirement Analysis
 
-### 1. Requirement Analysis
+**AI ช่วย**
 
-AI ถูกใช้เพื่อ:
-- อ่าน `AGENTS.md`
-- อ่าน assessment PDFs
-- inspect โครงสร้าง repository
-- สรุปว่าอะไร implement แล้ว และอะไรยังขาด
-- ช่วยหา smallest next milestone
+* อ่าน Technical Assessment, PRD และ `AGENTS.md`
+* ตรวจโครงสร้าง repository
+* สรุป requirement และงานที่ยังขาด
+* ช่วยแบ่งงานเป็น milestone
 
-การตัดสินใจของ Developer:
-- ยืนยันว่าควรเริ่มจาก backend correctness ก่อน ไม่ใช่เริ่มจากความสวยของ frontend
+**Developer ตัดสินใจ**
 
-### 2. Backend Foundation
+* เริ่มจาก Backend และ Reservation Correctness ก่อน Frontend
+* จำกัด scope ให้ตรงกับ assessment และไม่เพิ่ม feature ที่ยังไม่จำเป็น
 
-AI ถูกใช้เพื่อ:
-- ออกแบบ Prisma schema เริ่มต้น
-- implement migration และ seed setup
-- เพิ่ม reservation domain rules
-- implement locker และ reservation APIs
-- เพิ่ม unit tests และ e2e tests
+## 2. Backend Implementation
 
-การตัดสินใจของ Developer:
-- คง model ให้เล็กที่สุดตาม core entities ที่จำเป็น
-- ไม่เพิ่ม abstractions ที่ยังไม่มี use case จริง
-- คุม API scope ให้ตรงกับ assessment
+**AI ช่วย**
 
-### 3. Git Workflow
+* ออกแบบ Prisma Schema
+* สร้าง Migration และ Seed Data
+* Implement Locker และ Reservation APIs
+* เพิ่ม Unit Test และ Integration Test
 
-AI ถูกใช้เพื่อ:
-- เสนอ branch strategy
-- จัดโครงสร้าง local history ให้เป็น milestone commits
-- เตรียมงานสำหรับ push ขึ้น GitHub
+**Developer ตัดสินใจ**
 
-การตัดสินใจของ Developer:
-- ไม่ใช้ชื่อ branch ที่ติดคำเรียกเครื่องมือ
-- ใช้ชื่อ branch แบบง่าย:
-  - `main`
-  - `backend-foundation`
-  - `reservation-safety`
-  - `frontend-reservation-flow`
-  - `project-docs`
+* ใช้ model เท่าที่จำเป็นกับ core requirement
+* ไม่เพิ่ม abstraction ที่ยังไม่มี use case
+* Review API behavior และ business rules ก่อนเก็บ implementation
 
-### 4. Concurrency Hardening
+## 3. Reservation Safety
 
-AI ถูกใช้เพื่อ:
-- จำกัด scope ให้ตรงกับ requirement เรื่อง concurrency
-- implement reservation creation แบบ transaction-based
-- เพิ่ม row locking ตอนเลือก compartment
-- เพิ่ม concurrent reservation integration test
+**AI ช่วย**
 
-การตัดสินใจของ Developer:
-- โฟกัสเฉพาะ concurrent booking correctness
-- ไม่ขยาย architecture เกิน requirement
+* วิเคราะห์ Duplicate Confirm และ Race Condition
+* Implement Transaction-based Reservation Creation
+* เพิ่ม Row Locking ด้วย `FOR UPDATE SKIP LOCKED`
+* เพิ่ม Concurrent Booking Integration Test
 
-### 5. Documentation
+**Developer ตัดสินใจ**
 
-AI ถูกใช้เพื่อ:
-- วางโครงสร้าง README
-- บันทึกหลักฐาน prompts
-- บันทึก workflow evidence
-- บันทึก code area ที่เลือกมา review
-- บันทึก duplicate-confirm debugging challenge
+* ให้ Backend/Database เป็นตัวรับประกัน Reservation Correctness
+* ใช้ Idempotency สำหรับ duplicate request
+* ใช้ Transaction และ Locking สำหรับกรณีหลาย user แย่งช่องเดียวกัน
 
-การตัดสินใจของ Developer:
-- จำกัดเอกสารให้อยู่ในสิ่งที่ assessment ขอจริง
+## 4. Frontend & Runtime Debugging
 
-### 6. Frontend Flow และ Runtime Debugging
+**AI ช่วย**
 
-AI ถูกใช้เพื่อ:
-- แทนที่ starter page ด้วย 4-screen reservation flow
-- เชื่อม frontend เข้ากับ locker และ reservation APIs ที่มีอยู่
-- จำกัด UI ให้สะอาดและอยู่ใน scope ของ assessment
-- debug runtime issues เช่น CORS และความพร้อมของ test data
+* สร้าง 4-screen Reservation Flow
+* เชื่อม Frontend กับ Backend APIs
+* Debug ปัญหา CORS และ Local Test Data
 
-การตัดสินใจของ Developer:
-- คง UI ให้ minimal แทนการใส่ visual complexity ที่ไม่จำเป็น
-- ใช้ seeded demo data และ demo user ID แบบคงที่สำหรับ local verification
-- แก้ integration issues โดยไม่ขยายงานไปสู่ authentication
+**Developer ตัดสินใจ**
 
-## จุดที่ Developer ควบคุมเอง
+* คง UI ให้เรียบง่ายและอยู่ใน scope
+* ใช้ Seed Data สำหรับ Demo
+* ไม่เพิ่ม Authentication เพราะอยู่นอก scope ของ assessment
 
-Developer เป็นคนตัดสินใจชัดเจนในเรื่อง:
-- จะเริ่มหรือหยุด coding เมื่อไร
-- จะตั้งชื่อ branch อย่างไร
-- จะจำกัด scope ของแต่ละ branch แค่ไหน
-- จะเริ่มย้ายงานขึ้น GitHub เมื่อไร
-- จะให้ docs มาก่อน frontend หรือไม่
+## 5. Git & Documentation
 
-## หลักฐานของการ Review
+**AI ช่วย**
 
-AI output ไม่ได้ถูกยอมรับอัตโนมัติ
+* เสนอ Git Workflow และ Branch Strategy
+* ช่วยจัดโครงสร้าง README และเอกสาร AI
+* ช่วยบันทึก AI Prompts, Code Review และ Debugging Challenge
 
-Developer เป็นคน review เรื่อง:
-- scope ของ schema
-- โครงสร้าง commit
-- โครงสร้าง branch
-- concurrency strategy
-- scope ของเอกสาร
+**Developer ตัดสินใจ**
 
-ขั้นตอน verify ที่ใช้ระหว่างการพัฒนา:
-- typecheck
-- unit tests
-- e2e tests
-- build
+* ใช้ branch ตาม milestone เช่น
 
-## สถานะการส่งงานปัจจุบัน
+  * `backend-foundation`
+  * `reservation-safety`
+  * `frontend-reservation-flow`
+  * `project-docs`
+* ตรวจให้เอกสารอธิบายเฉพาะสิ่งที่มีอยู่จริงใน repository
 
-เสร็จแล้ว:
-- backend foundation
-- reservation concurrency hardening
-- frontend 4-screen flow
-- เอกสารที่ต้องใช้ส่งงาน
-- Git branch และ commit structure
-- AI workflow evidence
+## Verification
 
-ยังไม่ได้ทำ:
-- optional Swagger / OpenAPI
+AI Generated Code ไม่ได้ถูกนำมาใช้โดยอัตโนมัติ ทุกส่วนต้องผ่าน Developer Review และตรวจสอบด้วย
+
+* Typecheck
+* Unit Test
+* Integration / E2E Test
+* Build
+* Manual Reservation Flow
+
+หากพบปัญหา จะนำผลจาก Test หรือ Runtime Error กลับไปใช้ในการ Debug และแก้ไขก่อนเป็น Final Code
+
+## Final Responsibility
+
+AI ถูกใช้เพื่อเพิ่มความเร็วในการวิเคราะห์และพัฒนา แต่การตัดสินใจด้าน Scope, Architecture, Business Logic และการยอมรับ Final Code เป็นความรับผิดชอบของ Developer

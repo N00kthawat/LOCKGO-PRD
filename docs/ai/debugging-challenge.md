@@ -1,47 +1,53 @@
 # Debugging Challenge
 
-เอกสารนี้ตอบโจทย์ assessment กรณีผู้ใช้กด `Confirm Reservation` สองครั้งเร็ว ๆ แล้วระบบสร้าง reservation ซ้ำ
+กรณีผู้ใช้กด `Confirm Reservation` สองครั้งเร็ว ๆ แล้วระบบสร้าง Reservation ซ้ำ
 
-## 1. ปัญหาอาจเกิดจากอะไรได้บ้าง
+## 1. ปัญหาเกิดจากอะไรได้บ้าง
 
-- frontend ส่งสอง requests ออกไปก่อนที่ปุ่มจะถูก disable
-- backend มอง requests ที่ซ้ำกันเป็น create operations คนละรายการ
-- flow การจองใช้วิธีอ่าน availability ก่อน แล้ว insert ทีหลัง โดยไม่มี concurrency protection
-- ระบบไม่มี idempotency key สำหรับการกด confirm ซ้ำของ user คนเดิม
+ปัญหาอาจเกิดจากหลายจุด เช่น
 
-## 2. จะตรวจอย่างไร
+- Frontend ส่ง request ซ้ำก่อนที่ปุ่ม Confirm จะถูก disable
+- Backend มองแต่ละ request เป็นการสร้าง Reservation ใหม่
+- ระบบตรวจ availability ก่อนแล้วค่อย insert โดยไม่มี transaction หรือ locking
+- ไม่มี idempotency สำหรับแยกว่า request ไหนเป็นการ Confirm เดิม
 
-- reproduce ปัญหาจาก reservation form โดยกด confirm ซ้ำ
-- inspect browser network requests ว่ามี request ซ้ำถูกส่งจริงหรือไม่
-- เทียบ request headers และ body โดยเฉพาะ `x-idempotency-key`
-- inspect backend logs และ database rows สำหรับ user และ time window เดียวกัน
-- รัน automated tests สำหรับ duplicate confirm และ concurrent booking
+## 2. จะตรวจสอบอย่างไร
 
-## 3. ควรแก้ที่ไหน
+เริ่มจาก reproduce โดยกด Confirm ซ้ำ แล้วตรวจ Browser Network ว่ามี request ถูกส่งออกไปกี่ครั้ง
 
-ควรช่วยกันทั้งสองฝั่ง แต่ backend ต้องเป็น source of truth
+จากนั้นตรวจ Backend logs และข้อมูลใน Database ว่าทั้งสอง request เข้าไปสร้าง Reservation จริงหรือไม่ รวมถึงตรวจ `x-idempotency-key` ว่าถูกส่งและจัดการถูกต้องหรือไม่
 
-- Frontend:
-  - disable การ submit ซ้ำขณะ request กำลังวิ่ง
-  - ส่ง idempotency key เมื่อเหมาะสม
-- Backend:
-  - มอง `(userId, idempotencyKey)` เดิมเป็น reservation request เดิม
-  - re-check availability ระหว่างการสร้าง reservation
-  - ป้องกัน race condition ของช่องสุดท้ายที่ระดับ database transaction
+สุดท้ายรัน automated test สำหรับทั้ง Duplicate Confirm และ Concurrent Booking เพื่อยืนยันปัญหา
 
-## 4. repository นี้ป้องกันอย่างไรในปัจจุบัน
+## 3. ควรแก้ที่ Frontend หรือ Backend
 
-- frontend มีช่อง optional สำหรับ idempotency key
-- backend รับ idempotency ได้ทั้งจาก request body และ `x-idempotency-key`
-- database บังคับ uniqueness ของ `(userId, idempotencyKey)`
-- reservation creation รันใน serializable transaction
-- lock candidate compartments ด้วย `FOR UPDATE SKIP LOCKED`
-- มี automated tests ยืนยันว่า:
-  - duplicate confirm ไม่สร้าง reservation ซ้ำ
-  - concurrent last-slot race มีเพียง request เดียวที่สำเร็จ
+ควรแก้ทั้งสองฝั่ง แต่ Backend ต้องเป็นตัวรับประกันความถูกต้องหลัก
+
+**Frontend**
+- Disable ปุ่ม Confirm ระหว่างที่ request กำลังทำงาน
+- ใช้ Idempotency Key สำหรับการ Confirm
+
+**Backend**
+- Request ที่มี `(userId, idempotencyKey)` เดิมต้องไม่สร้าง Reservation ใหม่
+- Re-check availability ก่อนสร้าง Reservation
+- ใช้ Database Transaction และ Row Locking เพื่อป้องกัน Race Condition
+
+## 4. วิธีป้องกันที่ใช้ในระบบ
+
+ระบบป้องกันปัญหานี้ด้วย
+
+- รองรับ `x-idempotency-key`
+- บังคับ Unique `(userId, idempotencyKey)` ที่ Database
+- สร้าง Reservation ภายใน Serializable Transaction
+- Lock Compartment ด้วย `FOR UPDATE SKIP LOCKED`
+- มี Automated Test สำหรับ Duplicate Confirm และ Concurrent Last-slot Booking
+
+ผลคือการกด Confirm ซ้ำจะไม่สร้าง Reservation ใหม่ และถ้าเหลือช่องเพียง 1 ช่องแล้วมีหลาย request จองพร้อมกัน จะมีเพียง request เดียวที่สำเร็จ
 
 ## 5. ทำไมเลือกวิธีนี้
 
-- การป้องกันที่ frontend อย่างเดียวไม่พอ เพราะสอง requests อาจออกไปแล้ว
-- idempotency อย่างเดียวไม่แก้ปัญหาคนละ user แข่งกันจองช่องสุดท้าย
-- assessment นี้ให้ความสำคัญกับ database-backed correctness มากกว่าความสะดวกของ UI
+การ Disable ปุ่มที่ Frontend อย่างเดียวไม่เพียงพอ เพราะ request อาจถูกส่งออกไปแล้วหรือเกิด retry จาก network ได้
+
+ส่วน Idempotency ช่วยป้องกัน request ซ้ำจากผู้ใช้คนเดิม แต่ไม่สามารถป้องกันผู้ใช้หลายคนที่กำลังแย่งจองช่องสุดท้ายได้
+
+จึงใช้ทั้ง Idempotency และ Database Transaction/Locking เพื่อให้ Backend เป็นตัวรับประกันว่า Reservation จะไม่ซ้ำและไม่เกิด Double Booking

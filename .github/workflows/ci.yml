@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - submission-polish
+      - backend-foundation
+      - reservation-safety
+      - frontend-reservation-flow
+      - project-docs
+  pull_request:
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.22.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: frontend
+        run: pnpm build
+
+  backend-verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: lockgo
+          POSTGRES_USER: lockgo
+          POSTGRES_PASSWORD: lockgo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lockgo -d lockgo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://lockgo:lockgo@127.0.0.1:5432/lockgo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.22.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: pnpm exec prisma generate
+
+      - name: Run database migrations
+        working-directory: backend
+        run: pnpm exec prisma migrate deploy
+
+      - name: Build backend
+        working-directory: backend
+        run: pnpm build
+
+      - name: Run backend unit tests
+        working-directory: backend
+        run: pnpm test
+
+      - name: Run backend e2e tests
+        working-directory: backend
+        run: pnpm test:e2e

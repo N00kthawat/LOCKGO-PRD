@@ -44,6 +44,31 @@
   color: var(--text-strong);
 }
 
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.lang-chip {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.lang-chip.active {
+  background: var(--text-strong);
+  color: #fff;
+}
+
 .surface {
   border: 1px solid var(--border);
   border-radius: 20px;
