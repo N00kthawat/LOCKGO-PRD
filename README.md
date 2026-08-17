@@ -22,6 +22,14 @@
 - Testing: มี unit test และ e2e test สำหรับ reservation rules และ API behavior
 - AI evidence: มี prompts, workflow, code review notes และ debugging notes ใน `docs/ai/`
 
+## สถานะการตรวจสอบล่าสุด
+
+- frontend build ผ่าน
+- backend build ผ่าน
+- backend unit tests ผ่าน
+- backend e2e tests ผ่าน
+- GitHub Actions CI ผ่าน
+
 ## สถาปัตยกรรม
 
 repository นี้จัดเป็น assessment project แบบ repo เดียว:
@@ -89,9 +97,21 @@ backend ใช้ `.env` ด้วย connection string นี้สำหรั
 
 ```env
 DATABASE_URL="postgresql://lockgo:lockgo@127.0.0.1:5433/lockgo"
+PORT=3000
 ```
 
 ใช้ [backend/.env.example](/Users/nookthawat/KHOOMKHA/lockgo/backend/.env.example) เป็นต้นแบบได้
+
+frontend ใช้ค่า default นี้สำหรับเรียก backend บนเครื่อง:
+
+```env
+VITE_API_BASE_URL="http://localhost:3000"
+```
+
+ports ที่ใช้ใน local development:
+- PostgreSQL Docker: `127.0.0.1:5433`
+- Backend API: `http://localhost:3000`
+- Frontend Vite: `http://localhost:5173`
 
 ## การตั้งค่า Database
 
@@ -139,6 +159,13 @@ pnpm dev
 Vite port ปกติ:
 - `5173`
 
+frontend build:
+
+```bash
+cd frontend
+pnpm build
+```
+
 ## วิธีลองใช้งาน Demo
 
 ใช้ลำดับนี้สำหรับทดสอบ flow แบบ end-to-end บนเครื่อง:
@@ -149,6 +176,7 @@ Vite port ปกติ:
 4. เปิด `http://localhost:5173`
 5. ที่หน้า Find Locker:
    - เลือก location จาก dropdown
+   - ถ้าจะลองแบบเจอง่าย แนะนำเริ่มที่ `Bangkok`
    - ใช้ `Start Date = 2026-08-18`
    - ใช้ `Start Time = 12:00`
    - ใช้ `Duration = 2`
@@ -261,6 +289,13 @@ backend เปิดเอกสาร API แบบ interactive ผ่าน Sw
 
 - `http://localhost:3000/api/docs-json`
 
+status code ที่ใช้บ่อยใน API ชุดนี้:
+- `200 OK`
+- `201 Created`
+- `400 Bad Request`
+- `404 Not Found`
+- `409 Conflict`
+
 ## Frontend Screens
 
 - Screen 1: Find Locker
@@ -290,6 +325,8 @@ backend เปิดเอกสาร API แบบ interactive ผ่าน Sw
   - start time
   - expiration time
   - booking status
+- รองรับสลับภาษา `ไทย / English`
+- เวลาใน UI แสดงเป็นเวลาไทย (ICT)
 
 ## AI Tools
 
@@ -322,7 +359,7 @@ AI tools ที่ใช้ใน assessment นี้:
 
 - authentication อยู่นอก scope ปัจจุบัน จึงส่ง `userId` ตรงใน request body
 - duration ของ reservation จัดการเป็นจำนวนชั่วโมงเต็มที่เป็นบวก
-- API documentation ตอนนี้เขียนแบบ manual ใน README แทน Swagger
+- frontend ใช้ `VITE_API_BASE_URL` และ default เป็น `http://localhost:3000` สำหรับ local development
 
 ## Concurrency Strategy
 
@@ -377,10 +414,15 @@ AI tools ที่ใช้ใน assessment นี้:
 
 - ยังไม่มี production deployment setup
 - ยังไม่มี reservation history endpoint
+- reservation ยังใช้ `userId` ตรง เพราะยังไม่มี authentication จริง
+- ไม่มี real payment, locker hardware integration หรือ QR unlock จริง
+- การค้นหา location ใน assessment นี้ใช้ข้อมูลและ filters ตาม scope ปัจจุบัน ยังไม่ได้ต่อ map service จริง
 
 ## Future Improvements
 
 - เพิ่ม reservation history API
+- เพิ่ม Swagger / OpenAPI ให้ละเอียดขึ้นในระดับ schema และ examples
+- เพิ่ม CI สำหรับ verify test และ build เพิ่มเติมเมื่อ workflow โตขึ้น
 - เพิ่ม authentication ถ้ามีเวลาหลัง core assessment เสร็จ
 
 ## CI
