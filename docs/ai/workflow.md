@@ -89,9 +89,23 @@ AI was used to:
 - capture prompt evidence
 - record workflow evidence
 - record one reviewed AI-assisted code area
+- record the duplicate-confirm debugging challenge
 
 Developer decision:
 - keep documentation limited to what the assessment explicitly requires
+
+### 6. Frontend Flow and Runtime Debugging
+
+AI was used to:
+- replace the starter page with the 4-screen reservation flow
+- connect the frontend to existing locker and reservation APIs
+- narrow the UI to a clean assessment-focused flow
+- debug runtime issues such as CORS and test-data usability
+
+Developer decision:
+- keep the UI minimal instead of adding non-required visual complexity
+- use seeded demo data and a stable demo user ID for local verification
+- fix integration issues without expanding scope into authentication
 
 ## Developer Control Points
 
@@ -124,10 +138,10 @@ Verification steps used during implementation included:
 Completed:
 - backend foundation
 - reservation concurrency hardening
+- frontend 4-screen flow
+- documentation required for submission
 - Git branch and commit structure
 - AI workflow evidence
 
 Not yet completed:
-- frontend flow
-- final README refinement after frontend completion
 - optional Swagger / OpenAPI

@@ -84,3 +84,23 @@ Prioritize submission documents required by the assessment before moving to addi
   - `docs/ai/prompts.md`
   - `docs/ai/workflow.md`
   - `docs/ai/code-review.md`
+
+## Prompt 5 — Frontend Runtime Debugging and Demo Usability
+
+### Goal
+
+Make the implemented flow testable by a reviewer without adding out-of-scope features.
+
+### AI Support Logic
+
+- identify why frontend requests fail in the browser
+- verify backend accessibility from the Vite dev server
+- improve local demo usability with stable seed data
+- avoid introducing authentication or unrelated product scope
+
+### Developer Decision
+
+- enable backend CORS for local frontend development
+- seed a fixed demo user ID for repeatable local testing
+- keep `userId` visible in the form because authentication is out of scope
+- change location input to a dropdown based on seeded sample locations

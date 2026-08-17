@@ -104,6 +104,11 @@
   color: var(--text-strong);
 }
 
+.helper-text {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .toggle {
   display: flex;
   align-items: center;

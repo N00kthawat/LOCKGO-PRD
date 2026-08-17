@@ -68,8 +68,21 @@ type ApiError = {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:3000'
+const DEMO_USER_ID = 'demo-user-001'
 
 const SIZE_OPTIONS: LockerSize[] = ['SMALL', 'MEDIUM', 'LARGE']
+const LOCATION_OPTIONS = [
+  'Bangkok',
+  'Chiang Mai',
+  'Phuket',
+  'Chonburi',
+  'Khon Kaen',
+  'Songkhla',
+  'Ayutthaya',
+  'Nakhon Ratchasima',
+  'Prachuap Khiri Khan',
+  'Udon Thani',
+]
 
 function App() {
   const [screen, setScreen] = useState<Screen>('find')
@@ -94,7 +107,7 @@ function App() {
     durationHours: '2',
   })
   const [reservationForm, setReservationForm] = useState({
-    userId: '',
+    userId: DEMO_USER_ID,
     size: 'SMALL' as LockerSize,
     startDate: '2026-08-18',
     startTime: '12:00',
@@ -303,7 +316,7 @@ function App() {
             >
               <label>
                 <span>Location</span>
-                <input
+                <select
                   value={searchForm.location}
                   onChange={(event) =>
                     setSearchForm((current) => ({
@@ -311,7 +324,14 @@ function App() {
                       location: event.target.value,
                     }))
                   }
-                />
+                >
+                  <option value="">All Locations</option>
+                  {LOCATION_OPTIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label>
@@ -600,6 +620,9 @@ function App() {
                       }))
                     }
                   />
+                  <small className="helper-text">
+                    Demo default: {DEMO_USER_ID}
+                  </small>
                 </label>
 
                 <label>
@@ -667,7 +690,7 @@ function App() {
                 <label>
                   <span>Idempotency Key</span>
                   <input
-                    placeholder="Optional"
+                    placeholder="Optional, e.g. booking-demo-001"
                     value={reservationForm.idempotencyKey}
                     onChange={(event) =>
                       setReservationForm((current) => ({
