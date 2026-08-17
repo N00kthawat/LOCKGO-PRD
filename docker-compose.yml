@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: lockgo-postgres
+    environment:
+      POSTGRES_USER: lockgo
+      POSTGRES_PASSWORD: lockgo
+      POSTGRES_DB: lockgo
+    ports:
+      - "5433:5432"
+    volumes:
+      - lockgo_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  lockgo_postgres_data:
