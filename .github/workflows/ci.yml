@@ -26,11 +26,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Setup pnpm
-        run: corepack prepare pnpm@11.22.0 --activate
+        run: npm install --global pnpm@11.22.0
 
       - name: Install frontend dependencies
         working-directory: frontend
@@ -72,11 +69,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend/pnpm-lock.yaml
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Setup pnpm
-        run: corepack prepare pnpm@11.22.0 --activate
+        run: npm install --global pnpm@11.22.0
 
       - name: Install backend dependencies
         working-directory: backend
