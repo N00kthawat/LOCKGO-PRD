@@ -1,106 +1,107 @@
 # AI Prompts Used
 
-This file records the main AI prompt intents used during development work for this assessment.
+ไฟล์นี้บันทึก intent ของ prompt หลักที่ใช้ระหว่างการพัฒนา assessment นี้
 
-It focuses on prompt logic, process, developer decisions, and outcomes. It does not reproduce conversational chat phrasing.
+เน้นอธิบาย logic ของ prompt, กระบวนการทำงาน, การตัดสินใจของ developer และผลลัพธ์ที่เกิดขึ้น
+ไม่ได้คัดลอกบทสนทนาจริงย้อนหลัง
 
-## Prompt 1 — Repository and Requirement Analysis
+## Prompt 1 — วิเคราะห์ repository และ requirement
 
-### Goal
+### เป้าหมาย
 
-Establish a structured pre-implementation review before any code changes:
-- read AGENTS.md
-- read assessment PDFs
-- inspect repository state
+ตั้งต้นด้วยการ review แบบมีโครงสร้างก่อนแก้โค้ด:
+- อ่าน AGENTS.md
+- อ่าน assessment PDFs
+- inspect สถานะ repository
 - inspect git status
 - inspect frontend/backend/Prisma/docker configuration
-- summarize what is done and what is missing
+- สรุปว่าอะไรทำเสร็จแล้ว และอะไรยังขาด
 
-### AI Support Logic
+### Logic ที่ให้ AI ช่วย
 
-- collect source-of-truth requirements first
-- inspect the existing implementation before proposing work
-- separate current state, missing scope, risks, and next milestone
+- เก็บ source-of-truth requirements ก่อน
+- inspect implementation ที่มีอยู่ก่อนเสนอแผน
+- แยก current state, missing scope, risks และ next milestone ออกจากกัน
 
-## Prompt 2 — Git Workflow Planning
+## Prompt 2 — วางแผน Git Workflow
 
-### Goal
+### เป้าหมาย
 
-Define a simple Git workflow that fits the assessment scope and produces reviewable milestone history.
+กำหนด Git workflow ที่เรียบง่าย เหมาะกับ scope ของ assessment และทำให้ history review ได้
 
-### AI Support Logic
+### Logic ที่ให้ AI ช่วย
 
-- choose a single-repository strategy
-- keep branch naming simple and professional
-- separate work into milestone branches instead of mixing unrelated changes
+- เลือก single-repository strategy
+- ตั้งชื่อ branch ให้เรียบง่ายและดูเป็นงานจริง
+- แยกงานเป็น milestone branches แทนการรวมทุกอย่างไว้ก้อนเดียว
 
-### Developer Decision
+### การตัดสินใจของ Developer
 
-- Use a single GitHub repository
-- Keep branch names simple and non-tool-branded
-- Adopt:
+- ใช้ GitHub repository เดียว
+- ใช้ชื่อ branch ที่ไม่ติดคำเรียกเครื่องมือ
+- ใช้แนวทาง:
   - `main`
   - `backend-foundation`
   - `reservation-safety`
   - `frontend-reservation-flow`
   - `project-docs`
 
-## Prompt 3 — Concurrency Safety Scope
+## Prompt 3 — จำกัด scope ของ concurrency safety
 
-### Goal
+### เป้าหมาย
 
-Limit the branch scope to the explicit concurrent booking requirement from the assessment.
+จำกัด scope ของ branch นี้ให้ตรงกับ requirement เรื่อง concurrent booking โดยตรง
 
-### AI Support Logic
+### Logic ที่ให้ AI ช่วย
 
-- focus only on concurrent reservation correctness
-- avoid unrelated frontend or documentation work
-- prefer a database-level correctness strategy instead of frontend-only protection
+- โฟกัสเฉพาะ reservation correctness ตอนเกิดพร้อมกัน
+- ไม่ดึงงาน frontend หรือ documentation ที่ไม่เกี่ยวเข้ามาปน
+- เลือกวิธีป้องกันที่ระดับ database แทนการพึ่ง frontend อย่างเดียว
 
-### Developer Decision
+### การตัดสินใจของ Developer
 
-- Restrict the branch scope to:
+- จำกัด scope ของ branch นี้ไว้ที่:
   - database-level concurrent booking protection
   - concurrent integration coverage
-- Avoid unrelated frontend or documentation work in that branch
+- ไม่เอางาน frontend หรือ docs ที่ไม่เกี่ยวมาปนใน branch นี้
 
-## Prompt 4 — Project Documentation Scope
+## Prompt 4 — จำกัด scope ของเอกสารโปรเจกต์
 
-### Goal
+### เป้าหมาย
 
-Prioritize submission documents required by the assessment before moving to additional feature work.
+จัดลำดับความสำคัญให้เอกสารที่ assessment บังคับมาก่อนงานเสริมอื่น
 
-### AI Support Logic
+### Logic ที่ให้ AI ช่วย
 
-- create only the required documentation artifacts
-- avoid adding optional documentation beyond current implementation scope
-- document actual work completed in the repository
+- สร้างเฉพาะเอกสารที่ assessment ขอจริง
+- ไม่เพิ่มเอกสาร optional ที่เกิน implementation ปัจจุบัน
+- เขียนตามงานที่มีอยู่จริงใน repository
 
-### Developer Decision
+### การตัดสินใจของ Developer
 
-- Prioritize required submission documents before frontend
-- Add only:
+- ให้เอกสารที่ต้องส่งมาก่อน frontend ในช่วงนั้น
+- เพิ่มเฉพาะ:
   - `README.md`
   - `docs/ai/prompts.md`
   - `docs/ai/workflow.md`
   - `docs/ai/code-review.md`
 
-## Prompt 5 — Frontend Runtime Debugging and Demo Usability
+## Prompt 5 — runtime debugging และการทำ demo ให้ลองได้จริง
 
-### Goal
+### เป้าหมาย
 
-Make the implemented flow testable by a reviewer without adding out-of-scope features.
+ทำให้ flow ที่ implement แล้วสามารถถูก reviewer ลองใช้งานได้จริง โดยไม่เพิ่ม feature นอก scope
 
-### AI Support Logic
+### Logic ที่ให้ AI ช่วย
 
-- identify why frontend requests fail in the browser
-- verify backend accessibility from the Vite dev server
-- improve local demo usability with stable seed data
-- avoid introducing authentication or unrelated product scope
+- หาให้เจอว่าทำไม frontend requests ถึง fail ใน browser
+- verify ว่า backend เปิดให้ Vite dev server เรียกได้
+- ปรับ demo usability บน local ด้วย seed data ที่ใช้งานซ้ำได้
+- ไม่ขยายงานไปสู่ authentication หรือ scope อื่นที่ไม่จำเป็น
 
-### Developer Decision
+### การตัดสินใจของ Developer
 
-- enable backend CORS for local frontend development
-- seed a fixed demo user ID for repeatable local testing
-- keep `userId` visible in the form because authentication is out of scope
-- change location input to a dropdown based on seeded sample locations
+- เปิด backend CORS สำหรับ local frontend development
+- seed demo user ID แบบคงที่เพื่อให้ทดสอบบน local ซ้ำได้
+- คง `userId` ให้มองเห็นได้ใน form เพราะ authentication อยู่นอก scope
+- เปลี่ยน location input เป็น dropdown ตาม sample locations ที่ seed ไว้

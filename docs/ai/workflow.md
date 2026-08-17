@@ -1,6 +1,6 @@
 # AI-Assisted Development Workflow
 
-This document describes how AI was used during the assessment and where developer decisions were applied.
+เอกสารนี้อธิบายว่าใช้ AI ระหว่าง assessment นี้อย่างไร และจุดไหนที่ developer เป็นคนตัดสินใจเอง
 
 ## Workflow
 
@@ -26,44 +26,44 @@ AI-assisted code review notes
 Final code
 ```
 
-## How AI Was Used
+## ใช้ AI อย่างไรบ้าง
 
 ### 1. Requirement Analysis
 
-AI was used to:
-- read `AGENTS.md`
-- read the assessment PDFs
-- inspect repository structure
-- summarize implemented vs missing scope
-- identify the smallest next milestone
+AI ถูกใช้เพื่อ:
+- อ่าน `AGENTS.md`
+- อ่าน assessment PDFs
+- inspect โครงสร้าง repository
+- สรุปว่าอะไร implement แล้ว และอะไรยังขาด
+- ช่วยหา smallest next milestone
 
-Developer decision:
-- confirm that work should start from backend correctness and not frontend visuals
+การตัดสินใจของ Developer:
+- ยืนยันว่าควรเริ่มจาก backend correctness ก่อน ไม่ใช่เริ่มจากความสวยของ frontend
 
 ### 2. Backend Foundation
 
-AI was used to:
-- design the initial Prisma schema
-- implement migration and seed setup
-- add reservation domain rules
-- implement locker and reservation APIs
-- add unit and e2e tests
+AI ถูกใช้เพื่อ:
+- ออกแบบ Prisma schema เริ่มต้น
+- implement migration และ seed setup
+- เพิ่ม reservation domain rules
+- implement locker และ reservation APIs
+- เพิ่ม unit tests และ e2e tests
 
-Developer decision:
-- keep the model minimal with only required core entities
-- avoid adding unnecessary abstractions
-- keep API scope aligned with the assessment
+การตัดสินใจของ Developer:
+- คง model ให้เล็กที่สุดตาม core entities ที่จำเป็น
+- ไม่เพิ่ม abstractions ที่ยังไม่มี use case จริง
+- คุม API scope ให้ตรงกับ assessment
 
 ### 3. Git Workflow
 
-AI was used to:
-- suggest branch strategy
-- restructure local history into milestone commits
-- prepare work for GitHub push
+AI ถูกใช้เพื่อ:
+- เสนอ branch strategy
+- จัดโครงสร้าง local history ให้เป็น milestone commits
+- เตรียมงานสำหรับ push ขึ้น GitHub
 
-Developer decision:
-- reject tool-branded branch naming
-- choose simple branch names:
+การตัดสินใจของ Developer:
+- ไม่ใช้ชื่อ branch ที่ติดคำเรียกเครื่องมือ
+- ใช้ชื่อ branch แบบง่าย:
   - `main`
   - `backend-foundation`
   - `reservation-safety`
@@ -72,76 +72,76 @@ Developer decision:
 
 ### 4. Concurrency Hardening
 
-AI was used to:
-- narrow the branch scope to the concurrency requirement
-- implement transaction-based reservation creation
-- add row locking for compartment selection
-- add a concurrent reservation integration test
+AI ถูกใช้เพื่อ:
+- จำกัด scope ให้ตรงกับ requirement เรื่อง concurrency
+- implement reservation creation แบบ transaction-based
+- เพิ่ม row locking ตอนเลือก compartment
+- เพิ่ม concurrent reservation integration test
 
-Developer decision:
-- focus only on concurrent booking correctness
-- avoid broad architectural changes outside the requirement
+การตัดสินใจของ Developer:
+- โฟกัสเฉพาะ concurrent booking correctness
+- ไม่ขยาย architecture เกิน requirement
 
 ### 5. Documentation
 
-AI was used to:
-- structure README content
-- capture prompt evidence
-- record workflow evidence
-- record one reviewed AI-assisted code area
-- record the duplicate-confirm debugging challenge
+AI ถูกใช้เพื่อ:
+- วางโครงสร้าง README
+- บันทึกหลักฐาน prompts
+- บันทึก workflow evidence
+- บันทึก code area ที่เลือกมา review
+- บันทึก duplicate-confirm debugging challenge
 
-Developer decision:
-- keep documentation limited to what the assessment explicitly requires
+การตัดสินใจของ Developer:
+- จำกัดเอกสารให้อยู่ในสิ่งที่ assessment ขอจริง
 
-### 6. Frontend Flow and Runtime Debugging
+### 6. Frontend Flow และ Runtime Debugging
 
-AI was used to:
-- replace the starter page with the 4-screen reservation flow
-- connect the frontend to existing locker and reservation APIs
-- narrow the UI to a clean assessment-focused flow
-- debug runtime issues such as CORS and test-data usability
+AI ถูกใช้เพื่อ:
+- แทนที่ starter page ด้วย 4-screen reservation flow
+- เชื่อม frontend เข้ากับ locker และ reservation APIs ที่มีอยู่
+- จำกัด UI ให้สะอาดและอยู่ใน scope ของ assessment
+- debug runtime issues เช่น CORS และความพร้อมของ test data
 
-Developer decision:
-- keep the UI minimal instead of adding non-required visual complexity
-- use seeded demo data and a stable demo user ID for local verification
-- fix integration issues without expanding scope into authentication
+การตัดสินใจของ Developer:
+- คง UI ให้ minimal แทนการใส่ visual complexity ที่ไม่จำเป็น
+- ใช้ seeded demo data และ demo user ID แบบคงที่สำหรับ local verification
+- แก้ integration issues โดยไม่ขยายงานไปสู่ authentication
 
-## Developer Control Points
+## จุดที่ Developer ควบคุมเอง
 
-The developer explicitly controlled:
-- whether coding should start or pause
-- branch naming strategy
-- scope boundaries for each branch
-- whether work should move to GitHub
-- whether to prioritize docs before frontend
+Developer เป็นคนตัดสินใจชัดเจนในเรื่อง:
+- จะเริ่มหรือหยุด coding เมื่อไร
+- จะตั้งชื่อ branch อย่างไร
+- จะจำกัด scope ของแต่ละ branch แค่ไหน
+- จะเริ่มย้ายงานขึ้น GitHub เมื่อไร
+- จะให้ docs มาก่อน frontend หรือไม่
 
-## Evidence of Review
+## หลักฐานของการ Review
 
-AI output was not accepted automatically.
+AI output ไม่ได้ถูกยอมรับอัตโนมัติ
 
-The developer reviewed:
-- schema scope
-- commit structure
-- branch structure
+Developer เป็นคน review เรื่อง:
+- scope ของ schema
+- โครงสร้าง commit
+- โครงสร้าง branch
 - concurrency strategy
-- documentation scope
+- scope ของเอกสาร
 
-Verification steps used during implementation included:
+ขั้นตอน verify ที่ใช้ระหว่างการพัฒนา:
 - typecheck
 - unit tests
 - e2e tests
 - build
 
-## Current Delivery Stages
+## สถานะการส่งงานปัจจุบัน
 
-Completed:
+เสร็จแล้ว:
 - backend foundation
 - reservation concurrency hardening
 - frontend 4-screen flow
-- documentation required for submission
-- Git branch and commit structure
+- เอกสารที่ต้องใช้ส่งงาน
+- Git branch และ commit structure
 - AI workflow evidence
 
-Not yet completed:
+ยังไม่ได้ทำ:
 - optional Swagger / OpenAPI
