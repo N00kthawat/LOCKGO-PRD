@@ -1,0 +1,19 @@
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+
+# Tooling and editor artifacts
+.agents/
+.claude/
+.windsurf/
+
