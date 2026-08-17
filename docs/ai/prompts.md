@@ -1,12 +1,14 @@
 # AI Prompts Used
 
-This file records important prompts actually used during development work for this assessment.
+This file records the main AI prompt intents used during development work for this assessment.
+
+It focuses on prompt logic, process, developer decisions, and outcomes. It does not reproduce conversational chat phrasing.
 
 ## Prompt 1 — Repository and Requirement Analysis
 
-### Purpose
+### Goal
 
-Used to force a structured first pass before coding:
+Establish a structured pre-implementation review before any code changes:
 - read AGENTS.md
 - read assessment PDFs
 - inspect repository state
@@ -14,41 +16,25 @@ Used to force a structured first pass before coding:
 - inspect frontend/backend/Prisma/docker configuration
 - summarize what is done and what is missing
 
-### Prompt
+### AI Support Logic
 
-```text
-อ่าน AGENTS.md, repository ปัจจุบัน และเอกสารทั้งหมดใน docs/assessment/ ก่อน
-
-ยังไม่อนุญาตให้แก้ไขไฟล์
-
-ตรวจสอบ git status, frontend, backend, Prisma, docker-compose และ database configuration
-
-จากนั้นรายงานเป็นภาษาไทยว่า:
-1. โปรเจกต์ปัจจุบันทำถึงไหนแล้ว
-2. อะไรทำงานแล้ว
-3. อะไรยังไม่ได้ทำ
-4. มีปัญหาหรือ configuration ที่น่าสงสัยหรือไม่
-5. Requirement หลักจาก Assessment และ PRD มีอะไรบ้าง
-6. เสนอ Milestone ถัดไปที่เล็กและเหมาะสมที่สุด
-
-แยก REQUIREMENT, ASSUMPTION และ RECOMMENDATION ออกจากกันให้ชัดเจน
-
-ห้ามแก้ไขไฟล์จนกว่าฉันจะอนุญาต
-```
+- collect source-of-truth requirements first
+- inspect the existing implementation before proposing work
+- separate current state, missing scope, risks, and next milestone
 
 ## Prompt 2 — Git Workflow Planning
 
-### Purpose
+### Goal
 
-Used to stop implementation drift and force a clean branch strategy based on assessment scope.
+Define a simple Git workflow that fits the assessment scope and produces reviewable milestone history.
 
-### Prompt
+### AI Support Logic
 
-```text
-วางแผนมาก่อนว่าจำทำ git ยังไง มีbranch อะไรบ้าง
-```
+- choose a single-repository strategy
+- keep branch naming simple and professional
+- separate work into milestone branches instead of mixing unrelated changes
 
-### Outcome
+### Developer Decision
 
 - Use a single GitHub repository
 - Keep branch names simple and non-tool-branded
@@ -61,17 +47,17 @@ Used to stop implementation drift and force a clean branch strategy based on ass
 
 ## Prompt 3 — Concurrency Safety Scope
 
-### Purpose
+### Goal
 
-Used to constrain work specifically to the assessment concurrency requirement and avoid unrelated feature expansion.
+Limit the branch scope to the explicit concurrent booking requirement from the assessment.
 
-### Prompt
+### AI Support Logic
 
-```text
-ว่ามา อย่าพาเราไปเรื่อยนะไม่งั้นพังแน่ พยายามดุจากเอกสาร ห้ามเกินขอเขต ห้ามแถม
-```
+- focus only on concurrent reservation correctness
+- avoid unrelated frontend or documentation work
+- prefer a database-level correctness strategy instead of frontend-only protection
 
-### Outcome
+### Developer Decision
 
 - Restrict the branch scope to:
   - database-level concurrent booking protection
@@ -80,17 +66,17 @@ Used to constrain work specifically to the assessment concurrency requirement an
 
 ## Prompt 4 — Project Documentation Scope
 
-### Purpose
+### Goal
 
-Used to shift from implementation to required submission documents only.
+Prioritize submission documents required by the assessment before moving to additional feature work.
 
-### Prompt
+### AI Support Logic
 
-```text
-ถ้าจะไม่หลุด scope ผมแนะนำให้ไป project-docs ก่อน ไม่ใช่ frontend
-```
+- create only the required documentation artifacts
+- avoid adding optional documentation beyond current implementation scope
+- document actual work completed in the repository
 
-### Outcome
+### Developer Decision
 
 - Prioritize required submission documents before frontend
 - Add only:
