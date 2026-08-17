@@ -4,12 +4,13 @@
 
 LOCKGO is a technical assessment project for the feature `Find & Reserve Locker`.
 
-The current implementation focuses on backend foundation and reservation correctness:
+The current implementation covers the core assessment flow across backend and frontend:
 - locker search API
 - locker detail API
 - reservation creation API
 - reservation detail API
 - Prisma schema and migration
+- frontend locker search and reservation flow
 - reservation business rule tests
 - concurrent booking protection
 
@@ -28,8 +29,8 @@ lockgo/
 ```
 
 Current implementation status:
-- `frontend/`: scaffold only
-- `backend/`: active implementation
+- `frontend/`: simple 4-screen reservation flow connected to the API
+- `backend/`: locker and reservation domain implementation
 - `docs/assessment/`: source-of-truth PDFs
 - `docs/ai/`: AI workflow evidence
 
@@ -37,7 +38,7 @@ Current implementation status:
 
 ```mermaid
 flowchart TD
-    UI["Frontend (planned 4 screens)"] --> API["NestJS API"]
+    UI["Frontend (4 screens)"] --> API["NestJS API"]
     API --> RES["Reservation Service"]
     API --> LOCK["Locker Service"]
     RES --> RULES["Reservation Rules"]
@@ -235,7 +236,6 @@ Related evidence:
 - Authentication is out of scope for the current implementation, so `userId` is provided directly in the request body.
 - Reservation duration is handled as a positive integer number of hours.
 - API documentation is currently maintained manually in README instead of Swagger.
-- Frontend screens are not implemented yet.
 
 ## Concurrency Strategy
 
@@ -258,7 +258,6 @@ Related evidence:
 
 ## Known Limitations
 
-- Frontend user flow is not implemented yet.
 - Root-level CI/CD is not implemented yet.
 - Swagger / OpenAPI is not implemented yet.
 - No production deployment setup is included.
@@ -266,7 +265,6 @@ Related evidence:
 
 ## Future Improvements
 
-- Implement the 4 required frontend screens.
 - Add reservation history API.
 - Add Swagger / OpenAPI documentation.
 - Add CI for test and build verification.
