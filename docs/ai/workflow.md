@@ -1,8 +1,8 @@
-# AI-Assisted Development Workflow
+# กระบวนการพัฒนาแบบใช้ AI ช่วย
 
-โปรเจกต์นี้ใช้ AI เป็น Coding Partner ในการวิเคราะห์ requirement, ช่วย implement, debug และ review code โดย Developer เป็นผู้ตัดสินใจเรื่อง scope, architecture และตรวจสอบผลลัพธ์ก่อนนำไปใช้
+โปรเจกต์นี้ใช้ AI เป็นผู้ช่วยในการพัฒนา เพื่อช่วยวิเคราะห์ความต้องการของโจทย์ ช่วยลงมือเขียนโค้ด ช่วยตรวจหาปัญหา และช่วยทบทวนโค้ด แต่ผู้ที่ตัดสินใจสุดท้ายยังคงเป็นผู้พัฒนา ไม่ว่าจะเป็นเรื่องขอบเขตงาน โครงสร้างระบบ หรือการยอมรับโค้ดก่อนนำไปใช้งานจริง
 
-## Workflow
+## ลำดับการทำงาน
 
 ```text
 Requirement
@@ -24,15 +24,15 @@ Final Code
 
 **AI ช่วย**
 
-* อ่าน Technical Assessment, PRD และ `AGENTS.md`
+* อ่านเอกสารโจทย์ Technical Assessment, PRD และ `AGENTS.md`
 * ตรวจโครงสร้าง repository
-* สรุป requirement และงานที่ยังขาด
-* ช่วยแบ่งงานเป็น milestone
+* สรุปความต้องการหลักของระบบ และชี้ว่างานส่วนใดยังขาด
+* ช่วยแบ่งงานออกเป็นช่วงย่อยหรือ milestone
 
 **Developer ตัดสินใจ**
 
-* เริ่มจาก Backend และ Reservation Correctness ก่อน Frontend
-* จำกัด scope ให้ตรงกับ assessment และไม่เพิ่ม feature ที่ยังไม่จำเป็น
+* เริ่มจากฝั่ง Backend และความถูกต้องของการจองก่อนทำ Frontend
+* จำกัดขอบเขตงานให้ตรงกับ assessment และไม่เพิ่มฟีเจอร์ที่ยังไม่จำเป็น
 
 ## 2. Backend Implementation
 
@@ -40,51 +40,52 @@ Final Code
 
 * ออกแบบ Prisma Schema
 * สร้าง Migration และ Seed Data
-* Implement Locker และ Reservation APIs
+* พัฒนา Locker API และ Reservation API
 * เพิ่ม Unit Test และ Integration Test
 
 **Developer ตัดสินใจ**
 
-* ใช้ model เท่าที่จำเป็นกับ core requirement
-* ไม่เพิ่ม abstraction ที่ยังไม่มี use case
-* Review API behavior และ business rules ก่อนเก็บ implementation
+* ใช้ model เท่าที่จำเป็นต่อความต้องการหลักของโจทย์
+* ไม่เพิ่มชั้น abstraction ที่ยังไม่มีเหตุผลรองรับในงานจริง
+* ตรวจพฤติกรรมของ API และกฎธุรกิจก่อนยอมรับ implementation
 
 ## 3. Reservation Safety
 
 **AI ช่วย**
 
-* วิเคราะห์ Duplicate Confirm และ Race Condition
-* Implement Transaction-based Reservation Creation
-* เพิ่ม Row Locking ด้วย `FOR UPDATE SKIP LOCKED`
-* เพิ่ม Concurrent Booking Integration Test
+* ช่วยวิเคราะห์ปัญหาการกดยืนยันซ้ำ และปัญหาการแย่งจองพร้อมกัน
+* ช่วยพัฒนากระบวนการสร้าง reservation แบบใช้ transaction
+* เพิ่มการ lock แถวข้อมูลด้วย `FOR UPDATE SKIP LOCKED`
+* เพิ่ม Integration Test สำหรับกรณีมีหลาย request แข่งกันจอง
 
 **Developer ตัดสินใจ**
 
-* ให้ Backend/Database เป็นตัวรับประกัน Reservation Correctness
-* ใช้ Idempotency สำหรับ duplicate request
-* ใช้ Transaction และ Locking สำหรับกรณีหลาย user แย่งช่องเดียวกัน
+* ให้ Backend และ Database เป็นตัวรับประกันความถูกต้องของการจอง
+* ใช้ Idempotency เพื่อป้องกันการส่งคำขอเดิมซ้ำ
+* ใช้ Transaction และ Locking สำหรับกรณีผู้ใช้หลายคนแย่งช่องเดียวกัน
 
 ## 4. Frontend & Runtime Debugging
 
 **AI ช่วย**
 
-* สร้าง 4-screen Reservation Flow
-* เชื่อม Frontend กับ Backend APIs
-* Debug ปัญหา CORS และ Local Test Data
+* สร้างหน้าจอการจอง 4 หน้า
+* เชื่อม Frontend เข้ากับ Backend APIs
+* ช่วยไล่ปัญหา CORS และข้อมูลทดสอบบนเครื่อง
 
 **Developer ตัดสินใจ**
 
 * คง UI ให้เรียบง่ายและอยู่ใน scope
-* ใช้ Seed Data สำหรับ Demo
-* ไม่เพิ่ม Authentication เพราะอยู่นอก scope ของ assessment
+* ใช้ Seed Data สำหรับสาธิตการทำงาน
+* ไม่เพิ่มระบบ Authentication จริง เพราะอยู่นอกขอบเขตของ assessment
 
 ## 5. Git & Documentation
 
 **AI ช่วย**
 
-* เสนอ Git Workflow และ Branch Strategy
+* เสนอแนวทางการใช้ Git และการแยก branch
 * ช่วยจัดโครงสร้าง README และเอกสาร AI
-* ช่วยบันทึก AI Prompts, Code Review และ Debugging Challenge
+* ช่วยบันทึก AI Prompts, การทบทวนโค้ด และโจทย์ debugging challenge
+
 
 **Developer ตัดสินใจ**
 
@@ -94,20 +95,20 @@ Final Code
   * `reservation-safety`
   * `frontend-reservation-flow`
   * `project-docs`
-* ตรวจให้เอกสารอธิบายเฉพาะสิ่งที่มีอยู่จริงใน repository
+* ตรวจให้เอกสารอธิบายเฉพาะสิ่งที่มีอยู่จริงใน repository เท่านั้น
 
 ## Verification
 
-AI Generated Code ไม่ได้ถูกนำมาใช้โดยอัตโนมัติ ทุกส่วนต้องผ่าน Developer Review และตรวจสอบด้วย
+โค้ดที่ AI ช่วยสร้างไม่ได้ถูกนำมาใช้โดยอัตโนมัติ ทุกส่วนต้องผ่านการตรวจทานโดยผู้พัฒนา และต้องตรวจสอบซ้ำด้วยวิธีต่อไปนี้
 
 * Typecheck
 * Unit Test
 * Integration / E2E Test
 * Build
-* Manual Reservation Flow
+* การลองใช้งาน Reservation Flow ด้วยมือ
 
-หากพบปัญหา จะนำผลจาก Test หรือ Runtime Error กลับไปใช้ในการ Debug และแก้ไขก่อนเป็น Final Code
+หากพบปัญหา จะนำผลจากการทดสอบหรือข้อผิดพลาดระหว่างรันกลับมาใช้ในการแก้ไข ก่อนสรุปเป็นโค้ดฉบับสุดท้าย
 
 ## Final Responsibility
 
-AI ถูกใช้เพื่อเพิ่มความเร็วในการวิเคราะห์และพัฒนา แต่การตัดสินใจด้าน Scope, Architecture, Business Logic และการยอมรับ Final Code เป็นความรับผิดชอบของ Developer
+AI ถูกใช้เพื่อช่วยให้การวิเคราะห์และพัฒนาเร็วขึ้น แต่การตัดสินใจเรื่องขอบเขตงาน โครงสร้างระบบ กฎธุรกิจ และการยอมรับโค้ดฉบับสุดท้าย ยังคงเป็นความรับผิดชอบของผู้พัฒนา
